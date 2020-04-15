@@ -73,7 +73,7 @@ cursor = conn.cursor()
 # )
 
 cursor = conn.cursor()
-sql = f"DROP SCHEMA;"
+sql = f"DROP TABLE IF EXISTS students;"
 cursor.execute(sql)
 conn.commit()
 
