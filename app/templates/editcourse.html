@@ -1,0 +1,26 @@
+{% extends "template.html" %}
+
+
+{% block app_content %}
+
+<div class="container">
+	<div class="formscontainer">
+		<div class="form">
+	    <h3>Edit Course</h3>
+	    <form action="{{ url_for('saveEditCourse', courseID=courseID) }}" method="post" novalidate>
+	    	{{ editCourseForm.hidden_tag() }}
+	        <p>
+	            {{ editCourseForm.courseName.label }}<br>
+	            {{ editCourseForm.courseName(placeholder=courseName, size=32) }}
+	        </p>
+	        {{ editCourseForm.submit1(value="Update Course") }}
+	    </form>
+
+	    <form action="{{ url_for('deleteCourse', courseID=courseID) }}" method="post" novalidate>
+	        <input type="submit" value="Delete Course" style="margin-top:2%">
+	    </form>
+
+		</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "template.html" %}
+
+
+{% block app_content %}
+
+<div class="container">
+	<div class="formscontainer">
+		<div class="form">
+	    <h3>Edit Assignment</h3>
+	    <form action="{{ url_for('saveEditAssignment', assignmentID=assignmentID) }}" method="post" novalidate>
+	    	{{ editAssignmentForm.hidden_tag() }}
+	        <p>
+	            {{ editAssignmentForm.name.label }}<br>
+	            {{ editAssignmentForm.name(placeholder=name, size=32) }}
+	        </p>
+	        <p>
+	            {{ editAssignmentForm.date.label }}<br>
+	            {{ editAssignmentForm.date(placeholder=date, size=32) }}
+	        </p>
+	        <p>
+	            {{ editAssignmentForm.points.label }}<br>
+	            {{ editAssignmentForm.points(placeholder=points, size=32) }}
+	        </p>
+	        {{ editAssignmentForm.submit2(value="Update Assignment") }}
+	    </form>
+
+	    <form action="{{ url_for('deleteAssignment', assignmentID=assignmentID) }}" method="post" novalidate>
+	        <input type="submit" value="Delete Assignment" style="margin-top:2%">
+	    </form>
+
+		</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+body {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.logo {
+  background-color: #0D122B;
+  padding: 10px;
+  color: white;
+}
+
+.img-container {
+	padding-top:2%;
+	padding-bottom:5%;
+}
+
+.properties-container {
+	padding-top: 2%;
+	padding-bottom: 2%;
+}
+
+.formscontainer
+{
+	display:flex;
+	justify-content: space-around;
+}
+
+.bottomcontainer
+{
+	padding-top: 3%;
+}

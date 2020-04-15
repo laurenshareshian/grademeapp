@@ -1,9 +1,23 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+class ClassesForm(FlaskForm):
+    teachername = StringField('', validators=[DataRequired()])
+    submit = SubmitField('Search')
+    
+class StudentForm(FlaskForm):
+    first = StringField('First', validators=[DataRequired()])
+    last = StringField('Last', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired()])
+    submit1 = SubmitField('Submit')
+    
+class AssignmentForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    date = StringField('Date', validators=[DataRequired()])
+    points = StringField('Points', validators=[DataRequired()])
+    submit2 = SubmitField('Submit')
+
+class AddCourseForm(FlaskForm):
+    courseName = StringField('Course name', validators=[DataRequired()])
+    submit1 = SubmitField('Submit')
