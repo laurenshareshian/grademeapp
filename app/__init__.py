@@ -51,6 +51,10 @@ conn.set_isolation_level( autocommit )
 cursor = conn.cursor()
 
 # use the execute() method to make a SQL request
+cursor.execute(f"ALTER USER {username} SUPERUSER;")
+conn.commit()
+
+# use the execute() method to make a SQL request
 cursor.execute(f"DROP DATABASE IF EXISTS grades;")
 conn.commit()
 
@@ -66,11 +70,26 @@ cursor.close()
 conn.close()
 
 # connect to the new database
+# conn = connect(
+# dbname = "grades",
+# user = "objectrocket",
+# host = "localhost",
+# password = "mypsword"
+# )
+result = urlparse("postgres://dnksgzdceixveu:e9289a3cd88b80874ba424a0e5f14c20113572f675cedc70a4cb5b94ba875c3a@ec2-18-206-84-251.compute-1.amazonaws.com:5432/grades")
+# also in python 3+ use: urlparse("YourUrl") not urlparse.urlparse("YourUrl") 
+username = result.username
+password = result.password
+database = result.path[1:]
+hostname = result.hostname
+port = result.port
+print(username, password, database, hostname, port)
 conn = connect(
-dbname = "grades",
-user = "objectrocket",
-host = "localhost",
-password = "mypsword"
+    database = database,
+    user = username,
+    password = password,
+    host = hostname,
+    port = port
 )
 cursor = conn.cursor()
 sql = '''CREATE TABLE students(
