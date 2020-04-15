@@ -48,6 +48,7 @@ def createdatabase():
        "INSERT INTO students (FIRST,LAST,EMAIL) "
        "VALUES ('Lauren','Shareshian','lauren@gmail.com');"
     )
+    conn.commit()
     cursor.execute(
        "INSERT INTO students (FIRST,LAST,EMAIL) "
        "VALUES ('Paul','OGDEN','lauren@gmail.com');"
