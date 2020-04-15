@@ -1,13 +1,33 @@
 # import the psycopg2 database adapter for PostgreSQL
 from psycopg2 import connect, extensions, sql
 
-# declare a new PostgreSQL connection object
+from urllib.parse import urlparse
+result = urlparse("postgresql://objectrocket:mypass@localhost/postgres")
+#result = urlparse("postgres://dnksgzdceixveu:e9289a3cd88b80874ba424a0e5f14c20113572f675cedc70a4cb5b94ba875c3a@ec2-18-206-84-251.compute-1.amazonaws.com:5432/dq7nmi44nhj5q")
+# also in python 3+ use: urlparse("YourUrl") not urlparse.urlparse("YourUrl") 
+username = result.username
+password = result.password
+database = result.path[1:]
+hostname = result.hostname
+port = result.port
+print(username, password, database, hostname, port)
 conn = connect(
-dbname = "postgres",
-user = "objectrocket",
-host = "localhost",
-password = "mypass"
+    database = database,
+    user = username,
+    password = password,
+    host = hostname,
+    port = port
 )
+
+
+
+# # declare a new PostgreSQL connection object
+# conn = connect(
+# dbname = "postgres",
+# user = "objectrocket",
+# host = "localhost",
+# password = "mypass"
+# )
 
 # get the isolation level for autocommit
 # set the isolation level for the connection's cursors
