@@ -7,22 +7,22 @@ from urllib.parse import urlparse
 # initialize students and arrays
 students = []
 # eventually we will get these via SQL queries instead
-dummystudent1 = Student('John', 'Doe', 'doe@gmail.com')
-dummystudent2 = Student('Kanye', 'West', 'west@gmail.com')
+dummystudent1 = {"first": "John", "last": "Doe", "email": "doe@gmail.com"}
+dummystudent2 = {"first": "Kanye", "last": "West", "email": "kanye@gmail.com"}
 students.append(dummystudent1)
 students.append(dummystudent2)
 
 assignments = []
 # eventually we will get these via SQL queries instead
-dummyassignment1 = Assignment('HW 1', '01-01-2020', 5)
-dummyassignment2 = Assignment('HW 2', '01-02-2020', 10)
+dummyassignment1 = {"name": "HW 1 ", "date": "01-01-2020", "points": "10"}
+dummyassignment2 = {"name": "HW 2 ", "date": "01-02-2020", "points": "5"}
 assignments.append(dummyassignment1)
 assignments.append(dummyassignment2)
 
 courses = []
 # eventually we will get these via SQL queries instead
-dummycourse1 = Course('Trig')
-dummycourse2 = Course('Basket Weaving')
+dummycourse1 = {"courseName": "Trig"}
+dummycourse2 = {"courseName": "Basket Weaving"}
 courses.append(dummycourse1)
 courses.append(dummycourse2)
 
