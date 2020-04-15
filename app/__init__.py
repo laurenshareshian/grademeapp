@@ -10,4 +10,4 @@ app.config.from_object(Config)
 # migrate = Migrate(app, db)
 createdatabase()
 
-from app import routes, models
+from app import routes
