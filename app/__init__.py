@@ -80,7 +80,7 @@ conn.commit()
 
 cursor = conn.cursor()
 sql = '''CREATE TABLE students(
-   STUDENTID INT PRIMARY KEY     NOT NULL,
+   STUDENTID SERIAL PRIMARY KEY,
    FIRST        CHAR(50)     NOT NULL,
    LAST         CHAR(50)     NOT NULL,
    EMAIL        CHAR(50)
@@ -90,8 +90,12 @@ cursor.execute(sql)
 conn.commit()
 
 cursor.execute(
-   "INSERT INTO students (STUDENTID,FIRST,LAST,EMAIL) "
-   "VALUES (1,'Lauren','Shareshian','lauren@gmail.com');"
+   "INSERT INTO students (FIRST,LAST,EMAIL) "
+   "VALUES ('Lauren','Shareshian','lauren@gmail.com');"
+)
+cursor.execute(
+   "INSERT INTO students (FIRST,LAST,EMAIL) "
+   "VALUES ('Paul','OGDEN','lauren@gmail.com');"
 )
 conn.commit()
 
