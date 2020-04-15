@@ -71,6 +71,13 @@ cursor = conn.cursor()
 # host = "localhost",
 # password = "mypsword"
 # )
+
+cursor = conn.cursor()
+sql = f"DROP SCHEMA public {database};"
+cursor.execute(sql)
+conn.commit()
+
+
 cursor = conn.cursor()
 sql = '''CREATE TABLE students(
    STUDENTID INT PRIMARY KEY     NOT NULL,
