@@ -36,17 +36,7 @@ def index():
 ### About Tab
 @app.route("/about")
 def about():
-    print(getStudents('doe@gmail.com')) # delete later - just database example
     return render_template("about.html")
-
-### Get classes via SQL query
-def getClasses(teacherstring):
-    con = sqlite3.connect("grades.db")
-    teacher = "SELECT * FROM grades WHERE teacher=:teacher"
-    cursor = con.execute(teacher, {"teacher": teacherstring})
-    rows = cursor.fetchall()
-    con.close()
-    return rows
 
 ### Add New Student Form
 @app.route('/addnewstudent', methods=['GET', 'POST'])
@@ -63,7 +53,7 @@ def saveAddStudent():
     last = request.form['last']
     email = request.form['email']
 
-    newstudent = Student(first, last, email) 
+    newstudent = {"first": first, "last": last, "email": email}
     students.append(newstudent)      
 
     return redirect(url_for('index'))
@@ -74,7 +64,7 @@ def saveAddStudent():
 def editStudent(first, last, email):
     # replace this for loop with database query eventually to find unique studentID
     for i, student in enumerate(students):
-        if student.email == email:
+        if student["email"] == email:
             studentID = i
 
     editStudentForm = StudentForm()
@@ -91,11 +81,11 @@ def saveEditStudent(studentID):
 
     # if the user changed any of these, replace them in database
     if first:
-        students[studentID].first = first
+        students[studentID]["first"] = first
     if last:
-        students[studentID].last = last
+        students[studentID]["last"] = last
     if email:
-        students[studentID].email = email        
+        students[studentID]["email"] = email        
 
     return redirect(url_for('index'))
 
@@ -123,7 +113,7 @@ def saveAddAssignment():
     date = request.form['date']
     points = request.form['points']
 
-    newassignment = Assignment(name, date, points) 
+    newassignment = {"name": name, "date": date, "points": points} 
     assignments.append(newassignment)      
 
     return redirect(url_for('index'))
@@ -134,7 +124,7 @@ def saveAddAssignment():
 def editAssignment(name, date, points):
     # replace this for loop with database query eventually to find unique assignmentID
     for i, assignment in enumerate(assignments):
-        if assignment.name == name:
+        if assignment["name"] == name:
             assignmentID = i
 
     editAssignmentForm = AssignmentForm()
@@ -151,11 +141,11 @@ def saveEditAssignment(assignmentID):
 
     # if the user changed any of these, replace them in database
     if name:
-        assignments[assignmentID].name = name
+        assignments[assignmentID]["name"] = name
     if date:
-        assignments[assignmentID].date = date
+        assignments[assignmentID]["date"] = date
     if points:
-        assignments[assignmentID].points = points     
+        assignments[assignmentID]["points"] = points     
 
     return redirect(url_for('index'))
 
@@ -181,7 +171,7 @@ def renderCourses():
 def saveAddCourse():
 
     name = request.form['courseName']
-    newcourse = Course(name)
+    newcourse = {"courseName": name}
     courses.append(newcourse)    
     return redirect(url_for('renderCourses'))
 
@@ -190,7 +180,7 @@ def saveAddCourse():
 def editCourse(courseName):
     # replace this for loop with database query eventually to find unique courseID
     for i, course in enumerate(courses):
-        if course.courseName == courseName:
+        if course["courseName"] == courseName:
             courseID = i
 
     editCourseForm = AddCourseForm()
@@ -205,7 +195,7 @@ def saveEditCourse(courseID):
 
     # if the user changed any of these, replace them in database
     if courseName:
-        courses[courseID].courseName = courseName 
+        courses[courseID]["courseName"] = courseName 
 
     return redirect(url_for('renderCourses'))
 
@@ -218,12 +208,15 @@ def deleteCourse(courseID):
 
     return redirect(url_for('renderCourses'))
 
+
+### This is a test that the postgres sql database is working
 @app.route('/testsql')
 def testsql():
+    # local database
+    result = urlparse("postgresql://objectrocket:mypass@localhost/postgres")
+    # heroku database
+#    result = urlparse("postgres://dnksgzdceixveu:e9289a3cd88b80874ba424a0e5f14c20113572f675cedc70a4cb5b94ba875c3a@ec2-18-206-84-251.compute-1.amazonaws.com:5432/dq7nmi44nhj5q")
 
-#    result = urlparse("postgresql://objectrocket:mypass@localhost/postgres")
-    result = urlparse("postgres://dnksgzdceixveu:e9289a3cd88b80874ba424a0e5f14c20113572f675cedc70a4cb5b94ba875c3a@ec2-18-206-84-251.compute-1.amazonaws.com:5432/dq7nmi44nhj5q")
-    # also in python 3+ use: urlparse("YourUrl") not urlparse.urlparse("YourUrl") 
     username = result.username
     password = result.password
     database = result.path[1:]
