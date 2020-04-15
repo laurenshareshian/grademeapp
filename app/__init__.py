@@ -73,7 +73,7 @@ cursor = conn.cursor()
 # )
 
 cursor = conn.cursor()
-sql = f"DROP SCHEMA public {database};"
+sql = f"DROP SCHEMA;"
 cursor.execute(sql)
 conn.commit()
 
