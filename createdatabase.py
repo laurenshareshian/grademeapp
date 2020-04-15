@@ -4,9 +4,8 @@ from urllib.parse import urlparse
 from config import Config
 
 
-def createdatabase():
-    print(Config.DATABASE_URL)
-    result = urlparse(Config.DATABASE_URL)
+def createdatabase(database_url):
+    result = urlparse(database_url)
     # local database
 #    result = urlparse("postgresql://objectrocket:mypass@localhost/postgres")
     # heroku database
