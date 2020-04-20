@@ -9,16 +9,20 @@
 	    	<form action="{{ url_for('saveAddAssignment') }}" method="post" novalidate>
 		        {{ addAssignmentForm.hidden_tag() }}
 		        <p>
-		            {{ addAssignmentForm.name.label }}<br>
-		            {{ addAssignmentForm.name(size=32) }}
+		            {{ addAssignmentForm.title.label }}<br>
+		            {{ addAssignmentForm.title(size=32) }}
 		        </p>
 		        <p>
-		            {{ addAssignmentForm.date.label }}<br>
-		            {{ addAssignmentForm.date(size=32) }}
+		            {{ addAssignmentForm.due.label }}<br>
+		            {{ addAssignmentForm.due(size=32) }}
 		        </p>
 		        <p>
 		            {{ addAssignmentForm.points.label }}<br>
 		            {{ addAssignmentForm.points(size=32) }}
+		        </p>
+                <p>
+		            {{ addAssignmentForm.description.label }}<br>
+		            {{ addAssignmentForm.description(size=32) }}
 		        </p>
 		        <p>{{ addAssignmentForm.submit2() }}</p>
 		    </form>

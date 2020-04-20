@@ -1,0 +1,29 @@
+{% extends "template.html" %}
+{% block app_content %}
+<div class="container">
+    <div class="form">
+        <h3>Add New Teacher</h3>
+        <form action="{{ url_for('saveAddTeacher') }}" method="post" novalidate>
+            {{ addTeacherForm.hidden_tag() }}
+            <p>
+                {{ addTeacherForm.first.label }}<br>
+                {{ addTeacherForm.first(size=32) }}
+            </p>
+            <p>
+                {{ addTeacherForm.last.label }}<br>
+                {{ addTeacherForm.last(size=32) }}
+            </p>
+            <p>
+                {{ addTeacherForm.email.label }}<br>
+                {{ addTeacherForm.email(size=32) }}
+            </p>
+            <p>
+                {{ addTeacherForm.phone.label }}<br>
+                {{ addTeacherForm.phone(size=32) }}
+            </p>
+
+            {{ addTeacherForm.submit1() }}
+        </form>
+    </div>
+</div>
+{% endblock %}

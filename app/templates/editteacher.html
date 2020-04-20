@@ -1,0 +1,38 @@
+{% extends "template.html" %}
+
+
+{% block app_content %}
+
+<div class="container">
+	<div class="formscontainer">
+		<div class="form">
+	    <h3>Edit Teacher</h3>
+	    <form action="{{ url_for('saveEditTeacher', teacherID=teacherID) }}" method="post" novalidate>
+	    	{{ editTeacherForm.hidden_tag() }}
+	        <p>
+	            {{ editTeacherForm.first.label }}<br>
+	            {{ editTeacherForm.first(placeholder=first, size=32) }}
+	        </p>
+            <p>
+	            {{ editTeacherForm.last.label }}<br>
+	            {{ editTeacherForm.last(placeholder=last, size=32) }}
+	        </p>
+            <p>
+	            {{ editTeacherForm.email.label }}<br>
+	            {{ editTeacherForm.email(placeholder=email, size=32) }}
+	        </p>
+            <p>
+	            {{ editTeacherForm.phone.label }}<br>
+	            {{ editTeacherForm.phone(placeholder=phone, size=32) }}
+	        </p>
+	        {{ editTeacherForm.submit1(value="Update Teacher") }}
+	    </form>
+
+	    <form action="{{ url_for('deleteTeacher', teacherID=teacherID) }}" method="post" novalidate>
+	        <input type="submit" value="Delete Teacher" style="margin-top:2%">
+	    </form>
+
+		</div>
+</div>
+
+{% endblock %}

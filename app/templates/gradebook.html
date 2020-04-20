@@ -12,10 +12,10 @@
 				  <th> Students </th>
 				  {%- for assignment in assignments %}
 					  <th>
-					  <a href="{{ url_for('editAssignment', name=assignment.name, date=assignment.date, points=assignment.points) }}" > 
-					  	<p>{{ assignment.name }}</p>
+					  <a href="{{ url_for('editAssignment', title=assignment.title, due=assignment.due, points=assignment.points, description=assignment.description) }}" >
+					  	<p>{{ assignment.title }}</p>
 					  </a>
-					  <p>{{ assignment.date }}</p> <p>{{ assignment.points }} points</p>
+					  <p>{{ assignment.due }}</p> <p>{{ assignment.points }} points</p>
 					  </th>
 				  {%- endfor %}
 				  <th>
@@ -29,7 +29,7 @@
 				{%- for student in students %}
 				    <tr>
 				        <th>
-				        	<a href="{{ url_for('editStudent', first=student.first, last=student.last, email=student.email) }}" > 
+				        	<a href="{{ url_for('editStudent', first=student.first, last=student.last, email=student.email, phone=student.phone, year=student.year) }}" >
 				        		{{ student.first + " " + student.last }}
 				        	</a>
 				        </th>

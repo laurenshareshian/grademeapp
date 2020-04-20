@@ -6,8 +6,24 @@
         <form action="{{ url_for('saveAddCourse') }}" method="post" novalidate>
             {{ addCourseForm.hidden_tag() }}
             <p>
-                {{ addCourseForm.courseName.label }}<br>
-                {{ addCourseForm.courseName(size=32) }}
+                {{ addCourseForm.title.label }}<br>
+                {{ addCourseForm.title(size=32) }}
+            </p>
+            <p>
+                {{ addCourseForm.section.label }}<br>
+                {{ addCourseForm.section(size=32) }}
+            </p>
+            <p>
+                {{ addCourseForm.department.label }}<br>
+                {{ addCourseForm.department(size=32) }}
+            </p>
+            <p>
+                {{ addCourseForm.description.label }}<br>
+                {{ addCourseForm.description(size=32) }}
+            </p>
+            <p>
+                {{ addCourseForm.units.label }}<br>
+                {{ addCourseForm.units(size=32) }}
             </p>
             {{ addCourseForm.submit1() }}
         </form>
