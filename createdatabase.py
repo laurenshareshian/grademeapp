@@ -77,12 +77,17 @@ def createdatabase(database_url):
     '''
     cursor.execute(sql)
     conn.commit()
-
+    cursor.execute("SELECT * FROM student;")
+    rows = cursor.fetchall()
+    print('here1', rows)
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Kanye', 'West',2020, 'kanye@gmail.com', '6094397996');"
     )
     conn.commit()
+    cursor.execute("SELECT * FROM student;")
+    rows = cursor.fetchall()
+    print('here2', rows)
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Anthony', 'Fauci', 2021, 'fauci@gmail.com', '5555555555');"
@@ -91,7 +96,7 @@ def createdatabase(database_url):
 
     cursor.execute("SELECT * FROM student;")
     rows = cursor.fetchall()
-    print('now here', rows)
+    print('here3', rows)
 
     sql = f"DROP TABLE IF EXISTS teacher;"
     cursor.execute(sql)
