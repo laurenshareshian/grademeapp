@@ -60,33 +60,6 @@ def createdatabase(database_url):
     # rows = cursor.fetchall()
     # print(rows)
 
-    sql = f"DROP TABLE IF EXISTS teacher;"
-    cursor.execute(sql)
-    conn.commit()
-
-    cursor = conn.cursor()
-    sql = '''CREATE TABLE teacher(
-       teacher_id SERIAL,
-       first_name        CHAR(50)     NOT NULL,
-       last_name         CHAR(50)     NOT NULL,
-       email         CHAR(50)     NOT NULL,
-       telephone         CHAR(50)     NOT NULL
-    );
-    '''
-    cursor.execute(sql)
-    conn.commit()
-
-    cursor.execute(
-       "INSERT INTO teacher (first_name, last_name, email, telephone) "
-       "VALUES ('Lauren','Shareshian','lauren@gmail.com', '6094397996');"
-    )
-    conn.commit()
-    cursor.execute(
-       "INSERT INTO teacher (first_name, last_name, email, telephone) "
-       "VALUES ('Joshua','Cox','cox@gmail.com', '5555555555');"
-    )
-    conn.commit()
-
     sql = f"DROP TABLE IF EXISTS student;"
     cursor.execute(sql)
     conn.commit()
@@ -115,6 +88,34 @@ def createdatabase(database_url):
     )
     conn.commit()
 
+    sql = f"DROP TABLE IF EXISTS teacher;"
+    cursor.execute(sql)
+    conn.commit()
+
+    cursor = conn.cursor()
+    sql = '''CREATE TABLE teacher(
+       teacher_id SERIAL PRIMARY KEY,
+       first_name        CHAR(50)     NOT NULL,
+       last_name         CHAR(50)     NOT NULL,
+       email         CHAR(50)     NOT NULL,
+       telephone         CHAR(50)     NOT NULL
+    );
+    '''
+    cursor.execute(sql)
+    conn.commit()
+
+    cursor.execute(
+       "INSERT INTO teacher (first_name, last_name, email, telephone) "
+       "VALUES ('Lauren','Shareshian','lauren@gmail.com', '6094397996');"
+    )
+    conn.commit()
+    cursor.execute(
+       "INSERT INTO teacher (first_name, last_name, email, telephone) "
+       "VALUES ('Joshua','Cox','cox@gmail.com', '5555555555');"
+    )
+    conn.commit()
+
+    
     sql = f"DROP TABLE IF EXISTS course;"
     cursor.execute(sql)
     conn.commit()
