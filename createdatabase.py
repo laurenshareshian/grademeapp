@@ -29,36 +29,6 @@ def createdatabase(database_url):
     # instantiate a cursor object from the connection
     cursor = conn.cursor()
 
-    # sql = f"DROP TABLE IF EXISTS students;"
-    # cursor.execute(sql)
-    # conn.commit()
-
-
-    # cursor = conn.cursor()
-    # sql = '''CREATE TABLE students(
-    #    STUDENTID SERIAL PRIMARY KEY,
-    #    FIRST        CHAR(50)     NOT NULL,
-    #    LAST         CHAR(50)     NOT NULL,
-    #    EMAIL        CHAR(50)
-    # );
-    # # '''
-    # cursor.execute(sql)
-    # conn.commit()
-    #
-    # cursor.execute(
-    #    "INSERT INTO students (FIRST,LAST,EMAIL) "
-    #    "VALUES ('Lauren','Shareshian','lauren@gmail.com');"
-    # )
-    # conn.commit()
-    # cursor.execute(
-    #    "INSERT INTO students (FIRST,LAST,EMAIL) "
-    #    "VALUES ('Paul','OGDEN','lauren@gmail.com');"
-    # )
-    # conn.commit()
-    #
-    # cursor.execute("SELECT * FROM students;")
-    # rows = cursor.fetchall()
-    # print(rows)
 
     sql = f"DROP TABLE IF EXISTS student;"
     cursor.execute(sql)
@@ -79,7 +49,7 @@ def createdatabase(database_url):
     conn.commit()
     cursor.execute("SELECT * FROM student;")
     rows = cursor.fetchall()
-    print('here1', rows)
+
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Kanye', 'West',2020, 'kanye@gmail.com', '6094397996');"
@@ -87,16 +57,12 @@ def createdatabase(database_url):
     conn.commit()
     cursor.execute("SELECT * FROM student;")
     rows = cursor.fetchall()
-    print('here2', rows)
+
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Anthony', 'Fauci', 2021, 'fauci@gmail.com', '5555555555');"
     )
     conn.commit()
-
-    cursor.execute("SELECT * FROM student;")
-    rows = cursor.fetchall()
-    print('here3', rows)
 
     sql = f"DROP TABLE IF EXISTS teacher;"
     cursor.execute(sql)
