@@ -80,10 +80,12 @@ def createdatabase(database_url):
        "INSERT INTO teacher (first_name, last_name, email, telephone) "
        "VALUES ('Lauren','Shareshian','lauren@gmail.com', '6094397996');"
     )
+    conn.commit()
     cursor.execute(
        "INSERT INTO teacher (first_name, last_name, email, telephone) "
        "VALUES ('Joshua','Cox','cox@gmail.com', '5555555555');"
     )
+    conn.commit()
 
     sql = f"DROP TABLE IF EXISTS student;"
     cursor.execute(sql)
@@ -106,10 +108,12 @@ def createdatabase(database_url):
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Kanye', 'West',2020, 'kanye@gmail.com', '6094397996');"
     )
+    conn.commit()
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Anthony', 'Fauci', 2021, 'fauci@gmail.com', '5555555555');"
     )
+    conn.commit()
 
     sql = f"DROP TABLE IF EXISTS course;"
     cursor.execute(sql)
@@ -132,10 +136,12 @@ def createdatabase(database_url):
        "INSERT INTO course (title, section, department, description, units) "
        "VALUES ('Calculus', '100', 'Math', 'Integrals', 4);"
     )
+    conn.commit()
     cursor.execute(
        "INSERT INTO course (title, section, department, description, units) "
        "VALUES ('Basketweaving', '400', 'Art', 'Weaving stuff', 3);"
     )
+    conn.commit()
 
     sql = f"DROP TABLE IF EXISTS assignment;"
     cursor.execute(sql)
@@ -157,10 +163,12 @@ def createdatabase(database_url):
        "INSERT INTO assignment (title, description, due, points) "
        "VALUES ('HW 1', 'Book exercises', '2020-01-01', 5);"
     )
+    conn.commit()
     cursor.execute(
        "INSERT INTO assignment (title, description, due, points) "
        "VALUES ('Essay', 'Faulkner essay', '2020-01-02', 50);"
     )
+    conn.commit()
 
     # close the cursor to avoid memory leaks
     cursor.close()

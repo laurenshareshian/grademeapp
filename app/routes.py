@@ -5,6 +5,7 @@ from psycopg2 import connect, extensions, sql
 from urllib.parse import urlparse
 
 result = urlparse(app.config['DATABASE_URL'])
+
 username = result.username
 password = result.password
 database = result.path[1:]
