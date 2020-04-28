@@ -13,8 +13,8 @@
                 {% for teacher in teachers %}
                 <tr>
                     <td> 
-                        <a href="{{ url_for('editTeacher', first=teacher.first, last=teacher.last, phone=teacher.phone, email=teacher.email) }}" >
-                            {{teacher.first}} {{teacher.last}}
+                        <a href="{{ url_for('editTeacher', teacher_id=teacher.teacher_id) }}" >
+                            {{teacher.first_name}} {{teacher.last_name}}
                         </a>
                     </td>
                 </tr>

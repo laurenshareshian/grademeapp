@@ -12,14 +12,14 @@
 				  <th> Students </th>
 				  {%- for assignment in assignments %}
 					  <th>
-					  <a href="{{ url_for('editAssignment', title=assignment.title, due=assignment.due, points=assignment.points, description=assignment.description) }}" >
+					  <a href="{{ url_for('editAssignment', title=assignment.title, due=assignment.due, points=assignment.points, description=assignment.description, assignment_id = assignment.assignment_id) }}" >
 					  	<p>{{ assignment.title }}</p>
 					  </a>
 					  <p>{{ assignment.due }}</p> <p>{{ assignment.points }} points</p>
 					  </th>
 				  {%- endfor %}
 				  <th>
-					<a href="{{ url_for('addNewAssignment') }}" > 
+					<a href="{{ url_for('addAssignment') }}" >
 						<p>Add New Assignment</p>
 					</a>
 				  </th>
@@ -29,8 +29,8 @@
 				{%- for student in students %}
 				    <tr>
 				        <th>
-				        	<a href="{{ url_for('editStudent', first=student.first, last=student.last, email=student.email, phone=student.phone, year=student.year) }}" >
-				        		{{ student.first + " " + student.last }}
+				        	<a href="{{ url_for('editStudent', student_id=student.student_id) }}" >
+				        		{{ student.first_name + " " + student.last_name }}
 				        	</a>
 				        </th>
 				     	{% for assignment in assignments%}
@@ -42,7 +42,7 @@
 
 				<tr>
 					<th>
-						<a href="{{ url_for('addNewStudent') }}" > 
+						<a href="{{ url_for('addStudent') }}" >
 							Add New Student
 						</a>
 					</th>

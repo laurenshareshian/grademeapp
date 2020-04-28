@@ -7,32 +7,32 @@
 	<div class="formscontainer">
 		<div class="form">
 	    <h3>Edit Course</h3>
-	    <form action="{{ url_for('saveEditCourse', courseID=courseID) }}" method="post" novalidate>
+	    <form action="{{ url_for('saveEditCourse', title=course.title, section=course.section, department=course.department, description=course.description, units=course.units, course_id=course.course_id) }}" method="post" novalidate>
 	    	{{ editCourseForm.hidden_tag() }}
 	        <p>
 	            {{ editCourseForm.title.label }}<br>
-	            {{ editCourseForm.title(placeholder=title, size=32) }}
+	            {{ editCourseForm.title(placeholder=course.title, size=32) }}
 	        </p>
             <p>
 	            {{ editCourseForm.section.label }}<br>
-	            {{ editCourseForm.section(placeholder=section, size=32) }}
+	            {{ editCourseForm.section(placeholder=course.section, size=32) }}
 	        </p>
             <p>
 	            {{ editCourseForm.department.label }}<br>
-	            {{ editCourseForm.department(placeholder=department, size=32) }}
+	            {{ editCourseForm.department(placeholder=course.department, size=32) }}
 	        </p>
             <p>
 	            {{ editCourseForm.description.label }}<br>
-	            {{ editCourseForm.description(placeholder=description, size=32) }}
+	            {{ editCourseForm.description(placeholder=course.description, size=32) }}
 	        </p>
             <p>
 	            {{ editCourseForm.units.label }}<br>
-	            {{ editCourseForm.units(placeholder=units, size=32) }}
+	            {{ editCourseForm.units(placeholder=course.units, size=32) }}
 	        </p>
 	        {{ editCourseForm.submit1(value="Update Course") }}
 	    </form>
 
-	    <form action="{{ url_for('deleteCourse', courseID=courseID) }}" method="post" novalidate>
+	    <form action="{{ url_for('deleteCourse', course_id=course.course_id) }}" method="post" novalidate>
 	        <input type="submit" value="Delete Course" style="margin-top:2%">
 	    </form>
 

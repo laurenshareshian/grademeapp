@@ -13,7 +13,7 @@
                 {% for course in courses %}
                 <tr>
                     <td> 
-                        <a href="{{ url_for('editCourse', title=course.title, section=course.section, description=course.description, units=course.units, department=course.department) }}" >
+                        <a href="{{ url_for('editCourse', course_id = course.course_id) }}" >
                             {{course.title}}
                         </a>
                     </td>

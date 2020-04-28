@@ -7,28 +7,28 @@
 	<div class="formscontainer">
 		<div class="form">
 	    <h3>Edit Assignment</h3>
-	    <form action="{{ url_for('saveEditAssignment', assignmentID=assignmentID) }}" method="post" novalidate>
+	    <form action="{{ url_for('saveEditAssignment', title=assignment.title, description = assignment.description, due=assignment.due, points=assignment.points, assignment_id=assignment.assignment_id) }}" method="post" novalidate>
 	    	{{ editAssignmentForm.hidden_tag() }}
 	        <p>
 	            {{ editAssignmentForm.title.label }}<br>
-	            {{ editAssignmentForm.title(placeholder=title, size=32) }}
+	            {{ editAssignmentForm.title(placeholder=assignment.title, size=32) }}
 	        </p>
 	        <p>
 	            {{ editAssignmentForm.due.label }}<br>
-	            {{ editAssignmentForm.due(placeholder=due, size=32) }}
+	            {{ editAssignmentForm.due(placeholder=assignment.due, size=32) }}
 	        </p>
 	        <p>
 	            {{ editAssignmentForm.points.label }}<br>
-	            {{ editAssignmentForm.points(placeholder=points, size=32) }}
+	            {{ editAssignmentForm.points(placeholder=assignment.points, size=32) }}
 	        </p>
             <p>
 	            {{ editAssignmentForm.description.label }}<br>
-	            {{ editAssignmentForm.description(placeholder=description, size=32) }}
+	            {{ editAssignmentForm.description(placeholder=assignment.description, size=32) }}
 	        </p>
 	        {{ editAssignmentForm.submit2(value="Update Assignment") }}
 	    </form>
 
-	    <form action="{{ url_for('deleteAssignment', assignmentID=assignmentID) }}" method="post" novalidate>
+	    <form action="{{ url_for('deleteAssignment', assignment_id=assignment.assignment_id) }}" method="post" novalidate>
 	        <input type="submit" value="Delete Assignment" style="margin-top:2%">
 	    </form>
 

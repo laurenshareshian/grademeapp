@@ -3,17 +3,17 @@ from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
 
 class TeacherForm(FlaskForm):
-    first = StringField('First name', validators=[DataRequired()])
-    last = StringField('Last name', validators=[DataRequired()])
+    first_name = StringField('First name', validators=[DataRequired()])
+    last_name = StringField('Last name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired()])
-    phone = StringField('Phone', validators=[DataRequired()])
+    telephone = StringField('Phone', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
     
 class StudentForm(FlaskForm):
-    first = StringField('First', validators=[DataRequired()])
-    last = StringField('Last', validators=[DataRequired()])
+    first_name = StringField('First', validators=[DataRequired()])
+    last_name = StringField('Last', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired()])
-    phone = StringField('Phone', validators=[DataRequired()])
+    telephone = StringField('Phone', validators=[DataRequired()])
     year = StringField('Year', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
     

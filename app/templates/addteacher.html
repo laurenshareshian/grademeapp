@@ -6,20 +6,20 @@
         <form action="{{ url_for('saveAddTeacher') }}" method="post" novalidate>
             {{ addTeacherForm.hidden_tag() }}
             <p>
-                {{ addTeacherForm.first.label }}<br>
-                {{ addTeacherForm.first(size=32) }}
+                {{ addTeacherForm.first_name.label }}<br>
+                {{ addTeacherForm.first_name(size=32) }}
             </p>
             <p>
-                {{ addTeacherForm.last.label }}<br>
-                {{ addTeacherForm.last(size=32) }}
+                {{ addTeacherForm.last_name.label }}<br>
+                {{ addTeacherForm.last_name(size=32) }}
             </p>
             <p>
                 {{ addTeacherForm.email.label }}<br>
                 {{ addTeacherForm.email(size=32) }}
             </p>
             <p>
-                {{ addTeacherForm.phone.label }}<br>
-                {{ addTeacherForm.phone(size=32) }}
+                {{ addTeacherForm.telephone.label }}<br>
+                {{ addTeacherForm.telephone(size=32) }}
             </p>
 
             {{ addTeacherForm.submit1() }}
