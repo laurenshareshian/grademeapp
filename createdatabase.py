@@ -64,9 +64,6 @@ def createdatabase(database_url):
     cursor.execute(sql)
     conn.commit()
 
-    cursor.execute("SELECT * FROM student;")
-    rows = cursor.fetchall()
-    print('here', rows)
 
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
