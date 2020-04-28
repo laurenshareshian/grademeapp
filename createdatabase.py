@@ -66,7 +66,7 @@ def createdatabase(database_url):
 
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
-       student_id        SERIAL PRIMARY KEY,
+       student_id SERIAL PRIMARY KEY,
        first_name        CHAR(50)     NOT NULL,
        last_name         CHAR(50)     NOT NULL,
        year              INT          NOT NULL,
@@ -92,6 +92,10 @@ def createdatabase(database_url):
     cursor.execute(sql)
     conn.commit()
 
+    cursor.execute("SELECT * FROM student;")
+    rows = cursor.fetchall()
+    print(rows)
+
     cursor = conn.cursor()
     sql = '''CREATE TABLE teacher(
        teacher_id SERIAL PRIMARY KEY,
@@ -115,7 +119,7 @@ def createdatabase(database_url):
     )
     conn.commit()
 
-    
+
     sql = f"DROP TABLE IF EXISTS course;"
     cursor.execute(sql)
     conn.commit()
