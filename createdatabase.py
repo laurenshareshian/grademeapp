@@ -64,9 +64,13 @@ def createdatabase(database_url):
     cursor.execute(sql)
     conn.commit()
 
+    cursor.execute("SELECT * FROM student;")
+    rows = cursor.fetchall()
+    print('here', rows)
+
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
-       student_id SERIAL PRIMARY KEY,
+       student_id SERIAL,
        first_name        CHAR(50)     NOT NULL,
        last_name         CHAR(50)     NOT NULL,
        year              INT          NOT NULL,
@@ -88,13 +92,13 @@ def createdatabase(database_url):
     )
     conn.commit()
 
+    cursor.execute("SELECT * FROM student;")
+    rows = cursor.fetchall()
+    print('now here', rows)
+
     sql = f"DROP TABLE IF EXISTS teacher;"
     cursor.execute(sql)
     conn.commit()
-
-    cursor.execute("SELECT * FROM student;")
-    rows = cursor.fetchall()
-    print(rows)
 
     cursor = conn.cursor()
     sql = '''CREATE TABLE teacher(
