@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateTimeField, IntegerField
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, NumberRange
+import datetime
 
 class TeacherForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
@@ -31,3 +32,17 @@ class CourseForm(FlaskForm):
     description = StringField('Description', validators=[DataRequired()])
     units = StringField('Units', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
+
+class SubmissionForm(FlaskForm):
+    sub_time = DateTimeField(
+        label='Submission date and time',
+        format='%Y-%m-%d %H:%M:%S',
+        validators=[DataRequired('Enter a date')]
+    )
+    grade = IntegerField('Grade', validators=[DataRequired(), NumberRange(0, 100)])
+    submit = SubmitField('Submit')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.sub_time.data:
+            self.sub_time.data = datetime.datetime.now()

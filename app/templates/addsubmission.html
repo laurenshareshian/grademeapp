@@ -1,0 +1,24 @@
+{% extends "template.html" %}
+
+{% block app_content %}
+<div class="container">
+	<div class="formscontainer">
+		<div class="form">
+		    <h3>Add New Submission</h3>
+	    	<form action="{{ url_for('addsubmission') }}" method="post" novalidate>
+		        {{ submission_form.hidden_tag() }}
+		        <p>
+		            {{ submission_form.grade.label }}<br>
+		            {{ submission_form.grade(size=32) }}
+		        </p>
+                <p>
+		            {{ submission_form.sub_time.label }}<br>
+		            {{ submission_form.sub_time(size=32) }}
+		        </p>
+		        <p>{{ submission_form.submit() }}</p>
+		    </form>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

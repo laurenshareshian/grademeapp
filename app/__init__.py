@@ -7,6 +7,4 @@ app = Flask(__name__)
 app.config.from_object(Config)
 bootstrap = Bootstrap(app)
 
-# createdatabase(app.config['DATABASE_URL'])
-
 from app import routes

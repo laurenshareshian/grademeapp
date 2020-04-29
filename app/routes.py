@@ -1,7 +1,7 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, g
 from app import app
-from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm
-from psycopg2 import connect, extensions, sql
+from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, SubmissionForm
+from psycopg2 import connect, extensions, sql, extras
 from urllib.parse import urlparse
 
 result = urlparse(app.config['DATABASE_URL'])
@@ -428,6 +428,32 @@ def deleteTeacher(teacher_id):
     conn.commit()
 
     return redirect(url_for('renderTeachers'))
+
+
+### View all submissions for all courses
+@app.route('/submissions', methods=['GET'])
+def viewsubmissions():
+
+    dict_cur = conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute('SELECT submission_id, submitted, grade FROM submission;')
+    submissions = dict_cur.fetchall()
+
+    return render_template('viewsubmissions.html', submissions=submissions)
+
+
+### Add new submission
+@app.route('/addsubmission', methods=['GET', 'POST'])
+def addsubmission():
+    if request.method == 'GET':
+        return render_template('addsubmission.html', submission_form=SubmissionForm())
+    else:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO submission (submitted, grade) 
+            VALUES (%s, %s);
+            ''',
+            (request.form['sub_time'], request.form['grade']))
+        return redirect(url_for('viewsubmissions'))
 
 
 ### This is a test that the postgres sql database is working

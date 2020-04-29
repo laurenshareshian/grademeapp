@@ -2,7 +2,7 @@
 from psycopg2 import connect, extensions, sql
 from urllib.parse import urlparse
 from config import Config
-
+import time
 
 def createdatabase(database_url):
     result = urlparse(database_url)
@@ -60,6 +60,10 @@ def createdatabase(database_url):
     # rows = cursor.fetchall()
     # print(rows)
 
+
+    ## Create student table
+
+
     sql = f"DROP TABLE IF EXISTS student;"
     cursor.execute(sql)
     conn.commit()
@@ -98,6 +102,10 @@ def createdatabase(database_url):
     rows = cursor.fetchall()
     print('here3', rows)
 
+
+    ## Create teacher table
+
+
     sql = f"DROP TABLE IF EXISTS teacher;"
     cursor.execute(sql)
     conn.commit()
@@ -124,6 +132,9 @@ def createdatabase(database_url):
        "VALUES ('Joshua','Cox','cox@gmail.com', '5555555555');"
     )
     conn.commit()
+
+
+    ## Create course table
 
 
     sql = f"DROP TABLE IF EXISTS course;"
@@ -154,6 +165,10 @@ def createdatabase(database_url):
     )
     conn.commit()
 
+
+    ## Create assignment table
+
+
     sql = f"DROP TABLE IF EXISTS assignment;"
     cursor.execute(sql)
     conn.commit()
@@ -180,6 +195,38 @@ def createdatabase(database_url):
        "VALUES ('Essay', 'Faulkner essay', '2020-01-02', 50);"
     )
     conn.commit()
+
+
+    ### Create submission table
+
+
+    cursor.execute('DROP TABLE IF EXISTS submission;')
+    cursor.execute('''CREATE TABLE submission(
+        submission_id   SERIAL PRIMARY KEY,
+        submitted       TIMESTAMP,
+        grade           INT, 
+        CONSTRAINT valid_grade CHECK(0 <= grade AND grade <= 100)
+    );''')
+
+    datetime_now = time.strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute('''
+        INSERT INTO submission (submitted, grade) 
+        VALUES (%s, %s);
+        ''',
+        (datetime_now, 55))
+
+    cursor.execute('''
+        INSERT into submission (submitted, grade)
+        VALUES (%s, %s);
+        ''',
+        (datetime_now, 72))
+
+    cursor.execute('''
+        INSERT into submission (submitted, grade)
+        VALUES (NULL, NULL);
+        ''')
+    conn.commit()
+
 
     # close the cursor to avoid memory leaks
     cursor.close()
