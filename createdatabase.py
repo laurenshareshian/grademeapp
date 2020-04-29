@@ -11,7 +11,7 @@ def createdatabase(database_url):
     database = result.path[1:]
     hostname = result.hostname
     port = result.port
-    print(username, password, database, hostname, port)
+    print('connecting to database', username, password, database, hostname, port)
     conn = connect(
         database = database,
         user = username,
@@ -29,12 +29,12 @@ def createdatabase(database_url):
     # instantiate a cursor object from the connection
     cursor = conn.cursor()
 
-
     ## Create student table
 
 
     sql = f"DROP TABLE IF EXISTS student;"
     cursor.execute(sql)
+    print('here')
     conn.commit()
 
 
