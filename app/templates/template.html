@@ -32,7 +32,12 @@
                     <li><a href="{{ url_for('viewsubmissions') }}">Submissions</a></li>
                 </ul>
                 <ul class="nav navbar-nav pull-right">
-                    <li><a href="{{ url_for('viewadmin') }}">Admin</a></li>
+                    <li>
+                        <a href="{{ url_for('viewadmin') }}" >
+                            <span class="glyphicon glyphicon-fire" aria-hidden="true"></span>
+                            <span class="text-danger">Admin</span>
+                        </a>
+                    </li>
                 </ul>
             </div>
         </div>
