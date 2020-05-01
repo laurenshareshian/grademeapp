@@ -453,7 +453,53 @@ def addsubmission():
             VALUES (%s, %s);
             ''',
             (request.form['sub_time'], request.form['grade']))
+        conn.commit()
         return redirect(url_for('viewsubmissions'))
+
+
+### Admin page
+@app.route('/admin', methods=['GET'])
+@app.route('/admin/<table>', methods=['GET', 'POST'])
+def viewadmin(table=None):
+    if not table:
+        cursor = conn.cursor()
+        cursor.execute("""
+                    SELECT table_name 
+                    FROM information_schema.tables 
+                    WHERE (table_schema = 'public')
+                    """)
+        table_names = [name[0] for name in cursor.fetchall()]
+
+        return render_template('admin.html', table_names=table_names)
+
+    if request.method == 'GET':
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE (table_schema = 'public')
+            """)
+        table_names = [name[0] for name in cursor.fetchall()]
+
+        dict_cur = conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur.execute('SELECT * FROM {};'.format(table))
+        columns = [desc[0] for desc in dict_cur.description]
+        records = dict_cur.fetchall()
+
+        return render_template('admin.html', table=records, columns=columns, table_names=table_names, title=table)
+    else:
+        values = [v if v != '' else None for v in request.form.values()]
+
+        cursor = conn.cursor()
+        cursor.execute(
+            sql.SQL('INSERT INTO {} VALUES ({})').format(
+                sql.Identifier(table),
+                sql.SQL(', ').join(sql.Placeholder() * len(values))
+            ),
+            values
+        )
+        conn.commit()
+        return redirect('/admin/{}'.format(table))
 
 
 ### This is a test that the postgres sql database is working
