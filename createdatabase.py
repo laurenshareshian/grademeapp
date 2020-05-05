@@ -45,7 +45,7 @@ def createdatabase(database_url):
        last_name         CHAR(50)     NOT NULL,
        year              INT          NOT NULL,
        email             CHAR(50)     NOT NULL,
-       telephone         CHAR(10)     NOT NULL 
+       telephone         CHAR(10)     
     );
     '''
     cursor.execute(sql)
@@ -81,7 +81,7 @@ def createdatabase(database_url):
        first_name        CHAR(50)     NOT NULL,
        last_name         CHAR(50)     NOT NULL,
        email         CHAR(50)     NOT NULL,
-       telephone         CHAR(50)     NOT NULL
+       telephone         CHAR(50)     
     );
     '''
     cursor.execute(sql)

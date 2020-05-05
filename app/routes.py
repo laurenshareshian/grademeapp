@@ -119,7 +119,10 @@ def saveEditStudent(first_name, last_name, year, email, telephone, student_id):
     else:
         student["email"] = email
     if form_telephone:
-        student["telephone"] = form_telephone
+        if form_telephone == "0":
+            student["telephone"] = ""
+        else:
+            student["telephone"] = form_telephone
     else:
         student["telephone"] = telephone
 
@@ -404,7 +407,10 @@ def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
     else:
         teacher["email"] =email
     if form_telephone:
-        teacher["telephone"] = form_telephone
+        if form_telephone == "0":
+            teacher["telephone"] = ""
+        else:
+            teacher["telephone"] = form_telephone
     else:
         teacher["telephone"] = telephone
 
