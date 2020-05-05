@@ -1,25 +1,43 @@
 {% extends "template.html" %}
+
 {% block app_content %}
+<script>function filterFunction() { // Declare a function
+  var dept = document.getElementById("department").value;
+    {window.location = "/courses/"+dept}
+};
+</script>
+
 <div class="container">
     <div class="bottomcontainer">
         {% if courses %}
-        <table class="table table-striped table-sm">
-            <thead>
-                <tr>
-                    <th> Courses </th>
-                </tr>
-            </thead>
-            <tbody id="tablebody">
-                {% for course in courses %}
-                <tr>
-                    <td> 
-                        <a href="{{ url_for('editCourse', course_id = course.course_id) }}" >
-                            {{course.title}}
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}            </tbody>
-        </table>
+            <form action="" method="post">
+            Click on a course name to edit or delete. Filter by department:
+            <select id="department" class="department" onchange="filterFunction()">
+              <option value=" " selected></option>
+                <option value="All">All</option>
+              {% for department in departments %}
+                <option value="{{department}}">{{department}}</option>
+              {% endfor %}
+            </select>
+                <table class="table table-striped table-sm">
+                    <thead>
+                        <tr>
+                            <th> Courses </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablebody">
+                        {% for course in courses %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('editCourse', course_id = course.course_id) }}" >
+                                    {{course.title}}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </form>
         {% endif %}
         {% if noresults %}
         No results.

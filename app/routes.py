@@ -35,6 +35,10 @@ cursor = conn.cursor()
 @app.route('/')
 #@app.route('/index')
 def index():
+
+    cursor.execute("SELECT * FROM course;")
+    course = cursor.fetchone()[1]
+
     cursor.execute("SELECT * FROM student;")
     studentlist = cursor.fetchall()
     students = []
@@ -49,7 +53,7 @@ def index():
 
     addStudentForm = StudentForm()
     addAssignmentForm = AssignmentForm()
-    return render_template('gradebook.html', addStudentForm=addStudentForm, addAssignmentForm=addAssignmentForm, students=students, assignments=assignments)
+    return render_template('gradebook.html', addStudentForm=addStudentForm, addAssignmentForm=addAssignmentForm, course=course, students=students, assignments=assignments)
 
 ### About Tab
 @app.route("/about")
@@ -253,14 +257,24 @@ def addCourse():
     return render_template('addcourse.html', addCourseForm=addCourseForm)
 
 @app.route('/courses', methods=['GET', 'POST'])
-def renderCourses():
-    cursor.execute("SELECT * FROM course;")
+@app.route('/courses/<department>', methods=['GET', 'POST'])
+def renderCourses(department="All"):
+
+    cursor.execute(f"SELECT department FROM course;")
+    rows = cursor.fetchall()
+    departments = list(set([row[0].strip() for row in rows]))
+    if department == 'All':
+        cursor.execute(f"SELECT * FROM course;")
+    else:
+        cursor.execute(f"SELECT * FROM course WHERE department = '{department}';")
     courselist = cursor.fetchall()
     courses = []
-    for course in courselist:
-        courses.append({'course_id': course[0], 'title': course[1].strip(), 'section': course[2], 'department': course[3].strip(), 'description': course[4], 'units': course[5] })
 
-    return render_template('courses.html', courses=courses)
+    for course in courselist:
+        course = {'course_id': course[0], 'title': course[1].strip(), 'section': course[2], 'department': course[3].strip(), 'description': course[4], 'units': course[5] }
+        courses.append(course)
+
+    return render_template('courses.html', courses=courses, departments=departments)
 
 @app.route('/saveAddCourse', methods=['POST'])
 def saveAddCourse():
