@@ -1,7 +1,7 @@
 from flask import render_template, flash, redirect, url_for, request, g
 from app import app
 from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, SubmissionForm
-from psycopg2 import connect, extensions, sql, extras
+from psycopg2 import connect, extensions, sql, extras, pool
 from urllib.parse import urlparse
 
 result = urlparse(app.config['DATABASE_URL'])
@@ -12,6 +12,16 @@ database = result.path[1:]
 hostname = result.hostname
 port = result.port
 print(username, password, database, hostname, port)
+
+db_pool = pool.ThreadedConnectionPool(
+    1,
+    20,
+    database=database,
+    user=username,
+    password=password,
+    host=hostname,
+    port=port)
+
 conn = connect(
     database=database,
     user=username,
@@ -455,7 +465,7 @@ def addsubmission():
     else:
         cursor = conn.cursor()
         cursor.execute('''
-            INSERT INTO submission (submitted, grade) 
+            INSERT INTO submission (submitted, grade)
             VALUES (%s, %s);
             ''',
             (request.form['sub_time'], request.form['grade']))
@@ -467,46 +477,58 @@ def addsubmission():
 @app.route('/admin', methods=['GET'])
 @app.route('/admin/<table>', methods=['GET', 'POST'])
 def viewadmin(table=None):
+    db_conn = db_pool.getconn()
+
     if not table:
-        cursor = conn.cursor()
-        cursor.execute("""
-                    SELECT table_name 
-                    FROM information_schema.tables 
-                    WHERE (table_schema = 'public')
-                    """)
-        table_names = [name[0] for name in cursor.fetchall()]
+        cur = db_conn.cursor()
+        cur.execute("""
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE (table_schema = 'public')
+            """)
+        table_names = [name[0] for name in cur.fetchall()]
+        cur.close()
+
+        db_pool.putconn(db_conn)
 
         return render_template('admin.html', table_names=table_names)
 
     if request.method == 'GET':
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT table_name 
-            FROM information_schema.tables 
+        cur = db_conn.cursor()
+        cur.execute("""
+            SELECT table_name
+            FROM information_schema.tables
             WHERE (table_schema = 'public')
             """)
-        table_names = [name[0] for name in cursor.fetchall()]
+        table_names = [name[0] for name in cur.fetchall()]
+        cur.close()
 
-        dict_cur = conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
         dict_cur.execute('SELECT * FROM {};'.format(table))
         columns = [desc[0] for desc in dict_cur.description]
         records = dict_cur.fetchall()
+        dict_cur.close()
+
+        db_pool.putconn(db_conn)
 
         return render_template('admin.html', table=records, columns=columns, table_names=table_names, title=table)
     else:
         values = [v if v != '' else None for v in request.form.values()]
 
-        cursor = conn.cursor()
-        cursor.execute(
+        cur = db_conn.cursor()
+        cur.execute(
             sql.SQL('INSERT INTO {} VALUES ({})').format(
                 sql.Identifier(table),
                 sql.SQL(', ').join(sql.Placeholder() * len(values))
             ),
             values
         )
-        conn.commit()
-        return redirect('/admin/{}'.format(table))
+        db_conn.commit()
+        cur.close()
 
+        db_pool.putconn(db_conn)
+
+        return redirect('/admin/{}'.format(table))
 
 ### This is a test that the postgres sql database is working
 @app.route('/testsql')
