@@ -129,7 +129,11 @@ def createdatabase(database_url):
        "VALUES ('Basketweaving', '400', 'Art', 'Weaving stuff', 3);"
     )
     conn.commit()
-
+    cursor.execute(
+       "INSERT INTO course (title, section, department, description, units) "
+       "VALUES ('Algebra', '100', 'Math', 'Functions', 3);"
+    )
+    conn.commit()
 
     ## Create assignment table
 
@@ -157,7 +161,7 @@ def createdatabase(database_url):
     conn.commit()
     cursor.execute(
        "INSERT INTO assignment (title, description, due, points) "
-       "VALUES ('Essay', 'Faulkner essay', '2020-01-02', 50);"
+       "VALUES ('Test 1', 'Derivatives', '2020-01-02', 50);"
     )
     conn.commit()
 

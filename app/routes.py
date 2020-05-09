@@ -4,26 +4,6 @@ from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, Subm
 from psycopg2 import connect, extensions, sql, extras, pool
 from urllib.parse import urlparse
 
-result = urlparse(app.config['DATABASE_URL'])
-
-username = result.username
-password = result.password
-database = result.path[1:]
-hostname = result.hostname
-port = result.port
-print(username, password, database, hostname, port)
-
-db_pool = pool.ThreadedConnectionPool(
-    1,
-    20,
-    database=database,
-    user=username,
-    password=password,
-    host=hostname,
-    port=port)
-
-
-
 def connect_db():
     result = urlparse(app.config['DATABASE_URL'])
     username = result.username
@@ -322,7 +302,7 @@ def renderCourses(department="All"):
     cursor.close()
     return render_template('courses.html', courses=courses, departments=departments)
 
-@app.route('/saveAddCourse', methods=['POST'])
+@app.route('/f', methods=['POST'])
 def saveAddCourse():
 
     title = request.form['title']
@@ -555,6 +535,24 @@ def addsubmission():
 @app.route('/admin', methods=['GET'])
 @app.route('/admin/<table>', methods=['GET', 'POST'])
 def viewadmin(table=None):
+    result = urlparse(app.config['DATABASE_URL'])
+
+    username = result.username
+    password = result.password
+    database = result.path[1:]
+    hostname = result.hostname
+    port = result.port
+    print(username, password, database, hostname, port)
+
+    db_pool = pool.ThreadedConnectionPool(
+        1,
+        20,
+        database=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port)
+
     db_conn = db_pool.getconn()
 
     if not table:
@@ -607,39 +605,3 @@ def viewadmin(table=None):
         db_pool.putconn(db_conn)
 
         return redirect('/admin/{}'.format(table))
-
-### This is a test that the postgres sql database is working
-@app.route('/testsql')
-def testsql():
-    result = urlparse(app.config['DATABASE_URL'])
-    username = result.username
-    password = result.password
-    database = result.path[1:]
-    hostname = result.hostname
-    port = result.port
-    print(username, password, database, hostname, port)
-    conn = connect(
-        database = database,
-        user = username,
-        password = password,
-        host = hostname,
-        port = port
-)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM student;")
-    students = cursor.fetchall()
-    print(students)
-
-    cursor.execute("SELECT * FROM teacher;")
-    teachers = cursor.fetchall()
-    print(teachers)
-
-    cursor.execute("SELECT * FROM course;")
-    courses = cursor.fetchall()
-    print(courses)
-
-    cursor.execute("SELECT * FROM assignment;")
-    assignments = cursor.fetchall()
-    print(assignments)
-
-    return render_template('testsql.html', students=students, teachers=teachers, courses=courses, assignments=assignments )
