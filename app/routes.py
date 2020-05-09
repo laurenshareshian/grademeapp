@@ -89,8 +89,8 @@ def saveAddStudent():
 
     db = get_db()
     cursor = db.cursor()
-    sql = f'''INSERT INTO student 
-    (first_name, last_name, email, telephone, year) 
+    sql = f'''INSERT INTO student
+    (first_name, last_name, email, telephone, year)
     VALUES (%s, %s, %s, %s, %s);'''
     cursor.execute(sql,
                 (newstudent['first_name'],
@@ -199,7 +199,7 @@ def saveAddAssignment():
     db = get_db()
     cursor = db.cursor()
     sql = f'''INSERT INTO assignment
-    (title, due, points, description) 
+    (title, due, points, description)
     VALUES (%s, %s, %s, %s);'''
     cursor.execute(sql,
                 (newassignment['title'],
@@ -315,7 +315,7 @@ def saveAddCourse():
     db = get_db()
     cursor = db.cursor()
     sql = f'''INSERT INTO course
-    (title, section, department, description, units) 
+    (title, section, department, description, units)
     VALUES (%s, %s, %s, %s, %s);'''
     cursor.execute(sql,
                 (newcourse['title'],
@@ -425,7 +425,7 @@ def saveAddTeacher():
     db = get_db()
     cursor = db.cursor()
     sql = f'''INSERT INTO teacher
-    (first_name, last_name, email, telephone) 
+    (first_name, last_name, email, telephone)
     VALUES (%s, %s, %s, %s);'''
     cursor.execute(sql,
                 (newteacher['first_name'],
@@ -537,27 +537,10 @@ def addsubmission():
 @app.route('/admin/<table>', methods=['GET', 'POST'])
 def viewadmin(table=None):
     result = urlparse(app.config['DATABASE_URL'])
-
-    username = result.username
-    password = result.password
-    database = result.path[1:]
-    hostname = result.hostname
-    port = result.port
-    print(username, password, database, hostname, port)
-
-    db_pool = pool.ThreadedConnectionPool(
-        1,
-        20,
-        database=database,
-        user=username,
-        password=password,
-        host=hostname,
-        port=port)
-
-    db_conn = db_pool.getconn()
+    db = get_db()
 
     if not table:
-        cur = db_conn.cursor()
+        cur = db.cursor()
         cur.execute("""
             SELECT table_name
             FROM information_schema.tables
@@ -565,13 +548,11 @@ def viewadmin(table=None):
             """)
         table_names = [name[0] for name in cur.fetchall()]
         cur.close()
-
-        db_pool.putconn(db_conn)
 
         return render_template('admin.html', table_names=table_names)
 
     if request.method == 'GET':
-        cur = db_conn.cursor()
+        cur = db.cursor()
         cur.execute("""
             SELECT table_name
             FROM information_schema.tables
@@ -580,19 +561,17 @@ def viewadmin(table=None):
         table_names = [name[0] for name in cur.fetchall()]
         cur.close()
 
-        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur = db.cursor(cursor_factory=extras.DictCursor)
         dict_cur.execute('SELECT * FROM {};'.format(table))
         columns = [desc[0] for desc in dict_cur.description]
         records = dict_cur.fetchall()
         dict_cur.close()
 
-        db_pool.putconn(db_conn)
-
         return render_template('admin.html', table=records, columns=columns, table_names=table_names, title=table)
     else:
         values = [v if v != '' else None for v in request.form.values()]
 
-        cur = db_conn.cursor()
+        cur = db.cursor()
         cur.execute(
             sql.SQL('INSERT INTO {} VALUES ({})').format(
                 sql.Identifier(table),
@@ -600,9 +579,7 @@ def viewadmin(table=None):
             ),
             values
         )
-        db_conn.commit()
+        db.commit()
         cur.close()
-
-        db_pool.putconn(db_conn)
 
         return redirect('/admin/{}'.format(table))
