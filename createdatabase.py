@@ -45,7 +45,7 @@ def createdatabase(database_url):
        last_name         CHAR(50)     NOT NULL,
        year              INT          NOT NULL,
        email             CHAR(50)     NOT NULL,
-       telephone         CHAR(10)     
+       telephone         CHAR(10)
     );
     '''
     cursor.execute(sql)
@@ -81,7 +81,7 @@ def createdatabase(database_url):
        first_name        CHAR(50)     NOT NULL,
        last_name         CHAR(50)     NOT NULL,
        email         CHAR(50)     NOT NULL,
-       telephone         CHAR(50)     
+       telephone         CHAR(50)
     );
     '''
     cursor.execute(sql)
@@ -113,7 +113,7 @@ def createdatabase(database_url):
        section          INT     NOT NULL,
        department       CHAR(50)          NOT NULL,
        description      CHAR(200)     NOT NULL,
-       units            INT     NOT NULL    
+       units            INT     NOT NULL
     );
     '''
     cursor.execute(sql)
@@ -148,7 +148,7 @@ def createdatabase(database_url):
        title            CHAR(50)     NOT NULL,
        description      CHAR(200)     NOT NULL,
        due              DATE            NOT NULL,
-       points            INT     NOT NULL    
+       points            INT     NOT NULL
     );
     '''
     cursor.execute(sql)
@@ -173,13 +173,13 @@ def createdatabase(database_url):
     cursor.execute('''CREATE TABLE submission(
         submission_id   SERIAL PRIMARY KEY,
         submitted       TIMESTAMP,
-        grade           INT, 
+        grade           INT,
         CONSTRAINT valid_grade CHECK(0 <= grade AND grade <= 100)
     );''')
 
     datetime_now = time.strftime('%Y-%m-%d %H:%M:%S')
     cursor.execute('''
-        INSERT INTO submission (submitted, grade) 
+        INSERT INTO submission (submitted, grade)
         VALUES (%s, %s);
         ''',
         (datetime_now, 55))
@@ -194,6 +194,29 @@ def createdatabase(database_url):
         INSERT into submission (submitted, grade)
         VALUES (NULL, NULL);
         ''')
+    conn.commit()
+
+
+    ### Create student_submission table
+
+    cursor.execute('DROP TABLE IF EXISTS student_submission;')
+    cursor.execute('''CREATE TABLE student_submission(
+      student_id      INT,
+      submission_id   INT,
+      PRIMARY KEY (student_id, submission_id)
+      );''')
+    conn.commit()
+
+
+    ### Create student_course table
+
+
+    cursor.execute('DROP TABLE IF EXISTS student_course;')
+    cursor.execute('''CREATE TABLE student_course(
+      course_id   INT,
+      student_id  INT,
+      PRIMARY KEY (course_id, student_id)
+      );''')
     conn.commit()
 
 
