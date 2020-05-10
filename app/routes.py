@@ -535,6 +535,7 @@ def deleteTeacher(teacher_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     sql = f'''DELETE FROM teacher WHERE teacher_id = {teacher_id};'''
+    cursor.execute(sql)
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
