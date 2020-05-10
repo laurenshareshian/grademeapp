@@ -11,9 +11,13 @@
 		            {{ submission_form.grade.label }}<br>
 		            {{ submission_form.grade(size=32) }}
 		        </p>
-                <p>
+            <p>
 		            {{ submission_form.sub_time.label }}<br>
 		            {{ submission_form.sub_time(size=32) }}
+		        </p>
+		        <p>
+		            {{ submission_form.assignment.label }}<br>
+		            {{ submission_form.assignment(size=32) }}
 		        </p>
 		        <p>{{ submission_form.submit() }}</p>
 		    </form>

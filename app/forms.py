@@ -9,7 +9,7 @@ class TeacherForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired()])
     telephone = StringField('Phone', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
-    
+
 class StudentForm(FlaskForm):
     first_name = StringField('First', validators=[DataRequired()])
     last_name = StringField('Last', validators=[DataRequired()])
@@ -17,12 +17,13 @@ class StudentForm(FlaskForm):
     telephone = StringField('Phone', validators=[DataRequired()])
     year = StringField('Year', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
-    
+
 class AssignmentForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
     due = StringField('Due', validators=[DataRequired()])
     points = StringField('Points', validators=[DataRequired()])
+    course = IntegerField('Course')
     submit2 = SubmitField('Submit')
 
 class CourseForm(FlaskForm):
@@ -31,6 +32,7 @@ class CourseForm(FlaskForm):
     department = StringField('Department', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
     units = StringField('Units', validators=[DataRequired()])
+    teacher = IntegerField('Teacher')
     submit1 = SubmitField('Submit')
 
 class SubmissionForm(FlaskForm):
@@ -40,6 +42,7 @@ class SubmissionForm(FlaskForm):
         validators=[DataRequired('Enter a date')]
     )
     grade = IntegerField('Grade', validators=[DataRequired(), NumberRange(0, 100)])
+    assignment = IntegerField('Assignment')
     submit = SubmitField('Submit')
 
     def __init__(self, *args, **kwargs):

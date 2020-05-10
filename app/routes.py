@@ -214,19 +214,27 @@ def saveAddAssignment():
     due = request.form['due']
     points = request.form['points']
     description = request.form['description']
+    course = request.form['course'] if request.form['course'] != '' else None
 
-    newassignment = {"title": title, "due": due, "points": points, "description": description}
+    newassignment = {
+        "title": title,
+        "due": due,
+        "points": points,
+        "description": description,
+        "course": course
+        }
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     sql = f'''INSERT INTO assignment
-    (title, due, points, description)
-    VALUES (%s, %s, %s, %s);'''
+    (title, due, points, description, course)
+    VALUES (%s, %s, %s, %s, %s);'''
     cursor.execute(sql,
                 (newassignment['title'],
                  str(newassignment["due"]),
                  str(newassignment["points"]),
-                 newassignment["description"]))
+                 newassignment["description"],
+                 newassignment["course"]))
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -239,9 +247,17 @@ def editAssignment(assignment_id):
     cursor = db_conn.cursor()
     cursor.execute(f"SELECT * FROM assignment WHERE assignment_id={assignment_id};")
     assignment = cursor.fetchall()[0]
-    assignment = {'assignment_id': assignment[0], 'title': assignment[1].strip(), 'description': assignment[2].strip(), 'due': assignment[3], 'points': assignment[4]}
-    print(assignment)
+    assignment = {
+        'assignment_id': assignment[0],
+        'title': assignment[1].strip(),
+        'description': assignment[2].strip(),
+        'due': assignment[3],
+        'points': assignment[4],
+        'course': assignment[5]
+        }
+
     editAssignmentForm = AssignmentForm()
+
     cursor.close()
     db_pool.putconn(db_conn)
     return render_template('editassignment.html', editAssignmentForm=editAssignmentForm, assignment=assignment)
@@ -254,6 +270,7 @@ def saveEditAssignment(title, description, due, points, assignment_id):
     form_due = request.form['due']
     form_points = request.form['points']
     form_description = request.form['description']
+    form_course = request.form['course']
 
     assignment = {}
     # if the user changed any of these, replace them in database
@@ -274,14 +291,17 @@ def saveEditAssignment(title, description, due, points, assignment_id):
     else:
         assignment["points"] = points
 
+    assignment["course"] = form_course if form_course.strip() != '' else None
+
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    sql = f'''UPDATE assignment SET title = %s, description = %s, due = %s, points = %s WHERE assignment_id = %s;'''
+    sql = f'''UPDATE assignment SET title = %s, description = %s, due = %s, points = %s, course = %s  WHERE assignment_id = %s;'''
     cursor.execute(sql,
                 (assignment['title'],
                  assignment["description"],
                  str(assignment["due"]),
                  str(assignment["points"]),
+                 assignment["course"],
                  str(assignment_id)))
     db_conn.commit()
     cursor.close()
@@ -335,19 +355,30 @@ def saveAddCourse():
     department = request.form['department']
     description = request.form['description']
     units = request.form['units']
-    newcourse = {"title": title, "section": section, "department": department, "description": description, "units": units}
+    teacher = request.form['teacher']
+
+    newcourse = {
+        "title": title,
+        "section": section,
+        "department": department,
+        "description": description,
+        "units": units,
+        "teacher": teacher
+        }
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     sql = f'''INSERT INTO course
-    (title, section, department, description, units)
-    VALUES (%s, %s, %s, %s, %s);'''
+    (title, section, department, description, units, teacher)
+    VALUES (%s, %s, %s, %s, %s, %s);'''
     cursor.execute(sql,
                 (newcourse['title'],
                  str(newcourse["section"]),
                  newcourse["department"],
                  newcourse["description"],
-                 str(newcourse["units"])))
+                 str(newcourse["units"]),
+                 newcourse["teacher"]
+                ))
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -360,7 +391,15 @@ def editCourse(course_id):
     cursor = db_conn.cursor()
     cursor.execute(f"SELECT * FROM course WHERE course_id={course_id};")
     course = cursor.fetchall()[0]
-    course = {'course_id': course[0], 'title': course[1].strip(), 'section': course[2], 'department': course[3], 'description': course[4], 'units': course[5]}
+    course = {
+        'course_id': course[0],
+        'title': course[1].strip(),
+        'section': course[2],
+        'department': course[3],
+        'description': course[4],
+        'units': course[5],
+        'teacher': course[6]
+        }
     editCourseForm = CourseForm()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -375,6 +414,7 @@ def saveEditCourse(title, section, department, description, units, course_id):
     form_department = request.form['department']
     form_description = request.form['description']
     form_units = request.form['units']
+    form_teacher = request.form['teacher']
 
     course = {}
     # if the user changed any of these, replace them in database
@@ -399,15 +439,18 @@ def saveEditCourse(title, section, department, description, units, course_id):
     else:
         course["units"] = units
 
+    course['teacher'] = form_teacher if form_teacher.strip() != '' else None
+
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    sql = f'''UPDATE course SET title = %s, section = %s, department = %s, description = %s, units = %s WHERE course_id = %s;'''
+    sql = f'''UPDATE course SET title = %s, section = %s, department = %s, description = %s, units = %s, teacher = %s WHERE course_id = %s;'''
     cursor.execute(sql,
                 (course['title'],
                  str(course['section']),
                  course["department"],
                  course["description"],
                  str(course["units"]),
+                 course['teacher'],
                  str(course_id)))
     db_conn.commit()
     cursor.close()
@@ -527,7 +570,6 @@ def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
     db_pool.putconn(db_conn)
     cursor.close()
 
-
     return redirect(url_for('renderTeachers'))
 
 @app.route('/deleteTeacher/<teacher_id>', methods=['POST'])
@@ -548,7 +590,7 @@ def deleteTeacher(teacher_id):
 def viewsubmissions():
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
-    dict_cur.execute('SELECT submission_id, submitted, grade FROM submission;')
+    dict_cur.execute('SELECT submission_id, submitted, grade, assignment FROM submission;')
     submissions = dict_cur.fetchall()
     dict_cur.close()
     db_pool.putconn(db_conn)
@@ -564,10 +606,10 @@ def addsubmission():
         db_conn = db_pool.getconn()
         cursor = db_conn.cursor()
         cursor.execute('''
-            INSERT INTO submission (submitted, grade)
-            VALUES (%s, %s);
+            INSERT INTO submission (submitted, grade, assignment)
+            VALUES (%s, %s, %s);
             ''',
-            (request.form['sub_time'], request.form['grade']))
+            (request.form['sub_time'], request.form['grade'], request.form['assignment']))
         db_conn.commit()
         cursor.close()
         db_pool.putconn(db_conn)
