@@ -80,7 +80,7 @@ def createdatabase(database_url):
        teacher_id SERIAL PRIMARY KEY,
        first_name        CHAR(50)     NOT NULL,
        last_name         CHAR(50)     NOT NULL,
-       email         CHAR(50)     NOT NULL,
+       email             CHAR(50)     NOT NULL,
        telephone         CHAR(50)
     );
     '''
@@ -110,10 +110,11 @@ def createdatabase(database_url):
     sql = '''CREATE TABLE course(
        course_id        SERIAL PRIMARY KEY,
        title            CHAR(50)     NOT NULL,
-       section          INT     NOT NULL,
-       department       CHAR(50)          NOT NULL,
-       description      CHAR(200)     NOT NULL,
-       units            INT     NOT NULL
+       section          INT          NOT NULL,
+       department       CHAR(50)     NOT NULL,
+       description      CHAR(200)    NOT NULL,
+       units            INT          NOT NULL,
+       teacher          INT
     );
     '''
     cursor.execute(sql)
@@ -144,11 +145,12 @@ def createdatabase(database_url):
 
     cursor = conn.cursor()
     sql = '''CREATE TABLE assignment(
-       assignment_id        SERIAL PRIMARY KEY,
-       title            CHAR(50)     NOT NULL,
-       description      CHAR(200)     NOT NULL,
-       due              DATE            NOT NULL,
-       points            INT     NOT NULL
+       assignment_id    SERIAL      PRIMARY KEY,
+       title            CHAR(50)    NOT NULL,
+       description      CHAR(200)   NOT NULL,
+       due              DATE        NOT NULL,
+       points           INT         NOT NULL,
+       course           INT
     );
     '''
     cursor.execute(sql)
@@ -174,6 +176,7 @@ def createdatabase(database_url):
         submission_id   SERIAL PRIMARY KEY,
         submitted       TIMESTAMP,
         grade           INT,
+        assignment      INT
         CONSTRAINT valid_grade CHECK(0 <= grade AND grade <= 100)
     );''')
 
