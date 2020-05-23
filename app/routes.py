@@ -605,11 +605,25 @@ def addsubmission():
     else:
         db_conn = db_pool.getconn()
         cursor = db_conn.cursor()
-        cursor.execute('''
-            INSERT INTO submission (submitted, grade, assignment)
-            VALUES (%s, %s, %s);
-            ''',
-            (request.form['sub_time'], request.form['grade'], request.form['assignment']))
+
+        sql_string = 'INSERT INTO submission (submitted, grade, assignment) VALUES (%s, %s, %s) RETURNING submission_id'
+        cursor.execute(sql_string, (request.form['sub_time'], request.form['grade'], request.form['assignment']))
+        last_id = cursor.fetchone()[0]
+
+        student_ids = request.form['students'].split(',')
+        print(student_ids)
+        values = [(student_id, str(last_id)) for student_id in student_ids]
+        print(values)
+
+        sql_string = 'INSERT INTO student_submission (student_id, submission_id) VALUES %s'
+        extras.execute_values(cursor, sql_string, values)
+
+        # cursor.execute('''
+        #     INSERT INTO submission (submitted, grade, assignment)
+        #     VALUES (%s, %s, %s);
+        #     ''',
+        #     (request.form['sub_time'], request.form['grade'], request.form['assignment']))
+
         db_conn.commit()
         cursor.close()
         db_pool.putconn(db_conn)

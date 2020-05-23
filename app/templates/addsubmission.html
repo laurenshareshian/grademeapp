@@ -9,7 +9,7 @@
 		        {{ submission_form.hidden_tag() }}
 		        <p>
 		            {{ submission_form.grade.label }}<br>
-		            {{ submission_form.grade(size=32) }}
+		            {{ submission_form.grade(size=32, placeholder='0-100') }}
 		        </p>
             <p>
 		            {{ submission_form.sub_time.label }}<br>
@@ -17,7 +17,11 @@
 		        </p>
 		        <p>
 		            {{ submission_form.assignment.label }}<br>
-		            {{ submission_form.assignment(size=32) }}
+		            {{ submission_form.assignment(size=32, placeholder='assignment id') }}
+		        </p>
+		        <p>
+		            {{ submission_form.students.label }}<br>
+		            {{ submission_form.students(size=32, placeholder='student ids; 1, 2, 3') }}
 		        </p>
 		        <p>{{ submission_form.submit() }}</p>
 		    </form>
