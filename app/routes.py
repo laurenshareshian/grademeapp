@@ -590,7 +590,13 @@ def deleteTeacher(teacher_id):
 def viewsubmissions():
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
-    dict_cur.execute('SELECT submission_id, submitted, grade, assignment FROM submission;')
+    dict_cur.execute('''
+        SELECT student.student_id, submission.submission_id, first_name, last_name, grade, submitted, assignment
+        FROM submission
+        INNER JOIN student_submission ON student_submission.submission_id = submission.submission_id
+        INNER JOIN student ON student.student_id = student_submission.student_id
+        ORDER BY last_name ASC;
+        ''')
     submissions = dict_cur.fetchall()
     dict_cur.close()
     db_pool.putconn(db_conn)

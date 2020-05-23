@@ -8,7 +8,7 @@
             <table class="table table-striped table-sm">
                 <thead>
                     <tr>
-                        <th>Id</th>
+                        <th>Student</th>
                         <th>Grade</th>
                         <th>Submitted</th>
                         <th>Assignment</th>
@@ -17,7 +17,7 @@
                 <tbody id="tablebody">
                     {% for sub in submissions %}
                     <tr>
-                        <td>{{ sub.submission_id }}</td>
+                        <td>{{ sub.first_name }} {{ sub.last_name }}</td>
                         <td>{{ sub.grade }}</td>
                         <td>{{ sub.submitted }}</td>
                         <td>{{ sub.assignment }}</td>
