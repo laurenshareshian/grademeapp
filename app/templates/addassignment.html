@@ -24,10 +24,7 @@
 		            {{ addAssignmentForm.description.label }}<br>
 		            {{ addAssignmentForm.description(size=32) }}
 		        </p>
-		        <p>
-		            {{ addAssignmentForm.course.label }}<br>
-		            {{ addAssignmentForm.course(size=32) }}
-		        </p>
+                    <input type="hidden" name="course" value="{{ course }}">
 		        <p>{{ addAssignmentForm.submit2() }}</p>
 		    </form>
 		</div>
