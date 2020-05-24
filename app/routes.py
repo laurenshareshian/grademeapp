@@ -484,9 +484,17 @@ def editCourse(course_id):
             'teacher': course[6]
         }
 
+    # set the teacher dropdown
+    editCourseForm = CourseForm()
+    cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher;')
+    editCourseForm.teacher.choices = [(row[0], '{} {}'.format(row[1], row[2])) for row in cursor]
+    cursor.execute('SELECT teacher FROM course WHERE course_id= %s', course_id)
+    editCourseForm.teacher.default = cursor.fetchone()[0] or 0
+    editCourseForm.process()
+
     cursor.close()
     db_pool.putconn(db_conn)
-    editCourseForm = CourseForm()
+
     return render_template('editcourse.html', editCourseForm=editCourseForm, course=course)
 
 ### Save Course Edits
