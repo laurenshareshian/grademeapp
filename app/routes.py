@@ -687,6 +687,7 @@ def viewsubmissions():
         ORDER BY last_name ASC;
         ''')
     submissions = dict_cur.fetchall()
+
     dict_cur.close()
     db_pool.putconn(db_conn)
     return render_template('viewsubmissions.html', submissions=submissions)
@@ -696,7 +697,21 @@ def viewsubmissions():
 @app.route('/addsubmission', methods=['GET', 'POST'])
 def addsubmission():
     if request.method == 'GET':
-        return render_template('addsubmission.html', submission_form=SubmissionForm())
+        db_conn = db_pool.getconn()
+        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+
+        # assign choices to the form
+        form = SubmissionForm()
+        dict_cur.execute('SELECT assignment_id, title FROM assignment;')
+        form.assignment.choices = [(row['assignment_id'], row['title']) for row in dict_cur]
+
+        dict_cur.execute('SELECT student_id, first_name, last_name FROM student;')
+        form.students.choices = [(row['student_id'], '{} {}'.format(row['first_name'], row['last_name'])) for row in dict_cur]
+
+        dict_cur.close()
+        db_pool.putconn(db_conn)
+
+        return render_template('addsubmission.html', submission_form=form)
     else:
         db_conn = db_pool.getconn()
         cursor = db_conn.cursor()
@@ -707,7 +722,7 @@ def addsubmission():
         last_id = cursor.fetchone()[0]
 
         # add submission's student relations
-        student_ids = request.form['students'].split(',')
+        student_ids = request.form.getlist('students')
         values = [(student_id, str(last_id)) for student_id in student_ids]
         sql_string = 'INSERT INTO student_submission (student_id, submission_id) VALUES %s'
         extras.execute_values(cursor, sql_string, values)

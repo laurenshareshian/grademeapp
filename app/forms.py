@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateTimeField, IntegerField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateTimeField, IntegerField, SelectField, SelectMultipleField
 from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, NumberRange
 import datetime
 
@@ -42,8 +42,8 @@ class SubmissionForm(FlaskForm):
         validators=[DataRequired('Enter a date')]
     )
     grade = IntegerField('Grade', validators=[DataRequired(), NumberRange(0, 100)])
-    assignment = IntegerField('Assignment')
-    students = StringField('Students', validators=[DataRequired()])
+    assignment = SelectField('Assignment')
+    students = SelectMultipleField('Students', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
     def __init__(self, *args, **kwargs):
