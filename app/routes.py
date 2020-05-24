@@ -232,7 +232,9 @@ def addAssignment(course):
     # set the course dropdown
     addAssignmentForm = AssignmentForm()
     dict_cur.execute('SELECT course_id, title FROM course')
-    addAssignmentForm.course.choices = [(row['course_id'], row['title']) for row in dict_cur]
+    choices = [(row['course_id'], row['title']) for row in dict_cur]
+    choices.append(('', 'NULL'))
+    addAssignmentForm.course.choices = choices
 
     dict_cur.close()
     db_pool.putconn(db_conn)
@@ -247,7 +249,7 @@ def saveAddAssignment():
     due = request.form['due']
     points = request.form['points']
     description = request.form['description']
-    course = request.form['course'] if request.form['course'] != '' else None
+    course = request.form['course'] or None
 
     newassignment = {
         "title": title,
@@ -320,9 +322,11 @@ def editAssignment(assignment_id):
     # set the course dropdown
     editAssignmentForm = AssignmentForm()
     cursor.execute('SELECT course_id, title FROM course;')
-    editAssignmentForm.course.choices = [(row[0], row[1]) for row in cursor]
+    choices = [(row[0], row[1]) for row in cursor]
+    choices.append(('', 'NULL'))
+    editAssignmentForm.course.choices = choices
     cursor.execute('SELECT course FROM assignment WHERE assignment_id= %s', assignment_id)
-    editAssignmentForm.course.default = cursor.fetchone()[0] or 0
+    editAssignmentForm.course.default = cursor.fetchone()[0] or ''
     editAssignmentForm.process()
 
     cursor.close()
@@ -359,7 +363,7 @@ def saveEditAssignment(title, description, due, points, assignment_id):
     else:
         assignment["points"] = points
 
-    assignment["course"] = form_course if form_course.strip() != '' else None
+    assignment["course"] = form_course.strip() or None
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
@@ -395,7 +399,9 @@ def addCourse():
 
     addCourseForm = CourseForm()
     dict_cur.execute('SELECT teacher_id, first_name, last_name FROM teacher')
-    addCourseForm.teacher.choices = [(row['teacher_id'], '{} {}'.format(row['first_name'], row['last_name'])) for row in dict_cur]
+    choices = [(row['teacher_id'], '{} {}'.format(row['first_name'], row['last_name'])) for row in dict_cur]
+    choices.append(('', 'NULL'))
+    addCourseForm.teacher.choices = choices
 
     dict_cur.close()
     db_pool.putconn(db_conn)
@@ -432,7 +438,7 @@ def saveAddCourse():
     department = request.form['department']
     description = request.form['description']
     units = request.form['units']
-    teacher = request.form['teacher']
+    teacher = request.form['teacher'] or None
 
     newcourse = {
         "title": title,
@@ -506,9 +512,11 @@ def editCourse(course_id):
     # set the teacher dropdown
     editCourseForm = CourseForm()
     cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher;')
-    editCourseForm.teacher.choices = [(row[0], '{} {}'.format(row[1], row[2])) for row in cursor]
+    choices = [(row[0], '{} {}'.format(row[1], row[2])) for row in cursor]
+    choices.append(('', 'NULL'))
+    editCourseForm.teacher.choices = choices
     cursor.execute('SELECT teacher FROM course WHERE course_id= %s', course_id)
-    editCourseForm.teacher.default = cursor.fetchone()[0] or 0
+    editCourseForm.teacher.default = cursor.fetchone()[0] or ''
     editCourseForm.process()
 
     cursor.close()
@@ -550,7 +558,7 @@ def saveEditCourse(title, section, department, description, units, course_id):
     else:
         course["units"] = units
 
-    course['teacher'] = form_teacher if form_teacher.strip() != '' else None
+    course['teacher'] = form_teacher or None
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
@@ -739,7 +747,9 @@ def addsubmission():
         # assign choices to the form
         form = SubmissionForm()
         dict_cur.execute('SELECT assignment_id, title FROM assignment;')
-        form.assignment.choices = [(row['assignment_id'], row['title']) for row in dict_cur]
+        choices = [(row['assignment_id'], row['title']) for row in dict_cur]
+        choices.append(('', 'NULL'))
+        form.assignment.choices = choices
 
         dict_cur.execute('SELECT student_id, first_name, last_name FROM student;')
         form.students.choices = [(row['student_id'], '{} {}'.format(row['first_name'], row['last_name'])) for row in dict_cur]
@@ -753,8 +763,9 @@ def addsubmission():
         cursor = db_conn.cursor()
 
         # insert new submission
+        assignment_input = request.form['assignment'] or None
         sql_string = 'INSERT INTO submission (submitted, grade, assignment) VALUES (%s, %s, %s) RETURNING submission_id'
-        cursor.execute(sql_string, (request.form['sub_time'], request.form['grade'], request.form['assignment']))
+        cursor.execute(sql_string, (request.form['sub_time'], request.form['grade'], assignment_input))
         last_id = cursor.fetchone()[0]
 
         # add submission's student relations
