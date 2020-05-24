@@ -17,11 +17,11 @@
 		        </p>
 		        <p>
 		            {{ submission_form.assignment.label }}<br>
-		            {{ submission_form.assignment(width=100) }}
+		            {{ submission_form.assignment() }}
 		        </p>
 		        <p>
 		            {{ submission_form.students.label }}<br>
-		            {{ submission_form.students(size=5, width=100) }}
+		            {{ submission_form.students(size=5) }}
 		        </p>
 		        <p>{{ submission_form.submit() }}</p>
 		    </form>

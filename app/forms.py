@@ -32,7 +32,7 @@ class CourseForm(FlaskForm):
     department = StringField('Department', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
     units = StringField('Units', validators=[DataRequired()])
-    teacher = IntegerField('Teacher')
+    teacher = SelectField('Teacher')
     submit1 = SubmitField('Submit')
 
 class SubmissionForm(FlaskForm):

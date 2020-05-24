@@ -371,7 +371,16 @@ def deleteAssignment(assignment_id):
 
 @app.route('/addcourse', methods=['GET', 'POST'])
 def addCourse():
+    db_conn = db_pool.getconn()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+
     addCourseForm = CourseForm()
+    dict_cur.execute('SELECT teacher_id, first_name, last_name FROM teacher')
+    addCourseForm.teacher.choices = [(row['teacher_id'], '{} {}'.format(row['first_name'], row['last_name'])) for row in dict_cur]
+
+    dict_cur.close()
+    db_pool.putconn(db_conn)
+
     return render_template('addcourse.html', addCourseForm=addCourseForm)
 
 @app.route('/courses', methods=['GET', 'POST'])
