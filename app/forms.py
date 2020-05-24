@@ -23,7 +23,7 @@ class AssignmentForm(FlaskForm):
     description = StringField('Description', validators=[DataRequired()])
     due = StringField('Due', validators=[DataRequired()])
     points = StringField('Points', validators=[DataRequired()])
-    course = IntegerField('Course')
+    course = SelectField('Course')
     submit2 = SubmitField('Submit')
 
 class CourseForm(FlaskForm):

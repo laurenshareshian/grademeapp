@@ -226,8 +226,17 @@ def deleteStudent(student_id):
 ### Add New Assignment Form
 @app.route('/addassignment/<course>', methods=['GET', 'POST'])
 def addAssignment(course):
-    print(course)
+    db_conn = db_pool.getconn()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+
+    # set the course dropdown
     addAssignmentForm = AssignmentForm()
+    dict_cur.execute('SELECT course_id, title FROM course')
+    addAssignmentForm.course.choices = [(row['course_id'], row['title']) for row in dict_cur]
+
+    dict_cur.close()
+    db_pool.putconn(db_conn)
+
     return render_template('addassignment.html', addAssignmentForm=addAssignmentForm, course=course)
 
 ### Save Add Assignment
@@ -259,6 +268,7 @@ def saveAddAssignment():
                  str(newassignment["points"]),
                  newassignment["description"],
                  newassignment["course"]))
+
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -305,10 +315,19 @@ def editAssignment(assignment_id):
             'points': assignment[4],
             'course': assignment[5]
         }
+
+
+    # set the course dropdown
+    editAssignmentForm = AssignmentForm()
+    cursor.execute('SELECT course_id, title FROM course;')
+    editAssignmentForm.course.choices = [(row[0], row[1]) for row in cursor]
+    cursor.execute('SELECT course FROM assignment WHERE assignment_id= %s', assignment_id)
+    editAssignmentForm.course.default = cursor.fetchone()[0] or 0
+    editAssignmentForm.process()
+
     cursor.close()
     db_pool.putconn(db_conn)
 
-    editAssignmentForm = AssignmentForm()
     return render_template('editassignment.html', editAssignmentForm=editAssignmentForm, assignment=assignment)
 
 ### Save Assignment Edits
