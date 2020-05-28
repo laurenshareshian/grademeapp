@@ -62,7 +62,7 @@ def index():
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     cursor.execute("SELECT * FROM course;")
-    course = cursor.fetchall()[0]
+    course = cursor.fetchall()[0] # use calculus (the first one) as the landing page
     course = {
         'course_id': course[0],
         'title': course[1].strip(),
@@ -73,7 +73,11 @@ def index():
         'teacher': course[6]
     }
 
-    cursor.execute("SELECT * FROM student;")
+    cursor.execute(f"SELECT * "
+                   f"FROM student "
+                   f"INNER JOIN student_course ON student_course.student_id = student.student_id "
+                   f"WHERE student_course.course_id = {course['course_id']}")
+
     studentlist = cursor.fetchall()
     students = []
     for student in studentlist:
@@ -201,10 +205,10 @@ def saveEditStudent(first_name, last_name, year, email, telephone, student_id):
     cursor.execute(sql,
                 (student['first_name'],
                  student['last_name'],
-                 str(student['year']),
+                 student['year'],
                  student['email'],
-                 str(student['telephone']),
-                 str(student_id)))
+                 student['telephone'],
+                 student_id))
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -358,8 +362,9 @@ def saveEditAssignment(title, description, due, points, assignment_id):
         assignment["due"] = form_due
     else:
         assignment["due"] = due
+    print(form_points)
     if form_points:
-        assignment["points"] = points
+        assignment["points"] = form_points
     else:
         assignment["points"] = points
 
@@ -367,14 +372,19 @@ def saveEditAssignment(title, description, due, points, assignment_id):
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    sql = f'''UPDATE assignment SET title = %s, description = %s, due = %s, points = %s, course = %s  WHERE assignment_id = %s;'''
-    cursor.execute(sql,
-                (assignment['title'],
-                 assignment["description"],
-                 str(assignment["due"]),
-                 str(assignment["points"]),
-                 assignment["course"],
-                 str(assignment_id)))
+
+    print(assignment['points'], form_points)
+    cursor.execute(f'''UPDATE assignment 
+                        SET title = %s, 
+                        description = %s, 
+                        due = %s, 
+                        points = %s, 
+                        course = %s 
+                        WHERE assignment_id = %s''',
+                   (assignment['title'], assignment['description'],
+                    assignment['due'], assignment['points'],
+                    assignment['course'], assignment_id))
+
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -565,12 +575,12 @@ def saveEditCourse(title, section, department, description, units, course_id):
     sql = f'''UPDATE course SET title = %s, section = %s, department = %s, description = %s, units = %s, teacher = %s WHERE course_id = %s;'''
     cursor.execute(sql,
                 (course['title'],
-                 str(course['section']),
+                 course['section'],
                  course["department"],
                  course["description"],
-                 str(course["units"]),
+                 course["units"],
                  course['teacher'],
-                 str(course_id)))
+                 course_id))
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
@@ -686,7 +696,7 @@ def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
             teacher["telephone"] = form_telephone
     else:
         teacher["telephone"] = telephone
-
+    print(teacher)
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     sql = f'''UPDATE teacher SET first_name = %s, last_name = %s, email = %s, telephone = %s WHERE teacher_id = %s;'''
@@ -695,13 +705,11 @@ def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
                  teacher['last_name'],
                  teacher['email'],
                  teacher['telephone'],
-                 str(teacher_id)))
+                 teacher_id))
 
-    db_conn = db_pool.getconn()
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    cursor.close()
 
     return redirect(url_for('renderTeachers'))
 

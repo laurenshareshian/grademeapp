@@ -50,16 +50,12 @@ def createdatabase(database_url):
     '''
     cursor.execute(sql)
     conn.commit()
-    cursor.execute("SELECT * FROM student;")
-    rows = cursor.fetchall()
 
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
        "VALUES ('Kanye', 'West',2020, 'kanye@gmail.com', '6094397996');"
     )
     conn.commit()
-    cursor.execute("SELECT * FROM student;")
-    rows = cursor.fetchall()
 
     cursor.execute(
        "INSERT INTO student (first_name, last_name, year, email, telephone) "
