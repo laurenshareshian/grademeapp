@@ -3,6 +3,7 @@ from app import app
 from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, SubmissionForm
 from psycopg2 import sql, extras, pool
 from urllib.parse import urlparse
+import numpy as np
 
 result = urlparse(app.config['DATABASE_URL'])
 
@@ -55,11 +56,55 @@ def gradebook(course_id):
     for assignment in assignmentlist:
         assignments.append({'assignment_id': assignment[0], 'title': assignment[1].strip(), 'description': assignment[2].strip(), 'due': assignment[3], 'points': assignment[4] })
 
-    addStudentForm = StudentForm()
-    addAssignmentForm = AssignmentForm()
+    # cursor.execute(f"SELECT student_course.course_id, student.student_id, assignment.assignment_id, submission.grade "
+    #                f"FROM student "
+    #                f"LEFT OUTER JOIN student_submission ON student.student_id = student_submission.student_id "
+    #                f"LEFT OUTER JOIN submission ON student_submission.submission_id = submission.submission_id "
+    #                f"LEFT OUTER JOIN assignment ON submission.assignment = assignment.assignment_id "
+    #                f"LEFT OUTER JOIN student_course ON student.student_id = student_course.student_id "
+    #                f"WHERE student_course.course_id = {course['course_id']} "
+    #                f"AND (assignment.course = {course['course_id']} OR assignment.course IS NULL);")
+    # results = cursor.fetchall()
+    # print('results', results)
+    # student_ids = [result[1] for result in results if result[1] is not None]
+    # assignment_ids = [result[2] for result in results if result[2] is not None]
+    # if len(student_ids):
+    #     student_ids = set(student_ids)
+    # if len(assignment_ids):
+    #     assignment_ids = set(assignment_ids)
+    # print(len(student_ids), len(assignment_ids))
+    # student_assignment_dict = {(result[1], result[2]): result[3] for result in results}
+    # grades = np.zeros((max(len(student_ids), 1), max(len(assignment_ids), 1)))
+    # print(student_assignment_dict)
+    # for i, assignment_id in enumerate(assignment_ids):
+    #     for j, student_id in enumerate(student_ids):
+    #         if (student_id, assignment_id) in student_assignment_dict:
+    #             grades[j, i] = student_assignment_dict[(student_id, assignment_id)]
+    #         else:
+    #             grades[j, i] = None
+
+    grades = np.zeros((max(len(students), 1), max(len(assignments), 1)))
+    for i, assignment in enumerate(assignments):
+        for j, student in enumerate(students):
+            cursor.execute(f"SELECT student.student_id, assignment.assignment_id, submission.grade "
+                           f"FROM student "
+                           f"LEFT OUTER JOIN student_submission ON student.student_id = student_submission.student_id "
+                           f"LEFT OUTER JOIN submission ON student_submission.submission_id = submission.submission_id "
+                           f"LEFT OUTER JOIN assignment ON submission.assignment = assignment.assignment_id "
+                           f"WHERE student.student_id = {student['student_id']} "
+                           f"AND assignment.assignment_id = {assignment['assignment_id']};")
+            results = cursor.fetchall()
+            if len(results):
+                grades[j, i] = results[0][2]
+            else:
+                grades[j, i] = None
+
     cursor.close()
     db_pool.putconn(db_conn)
-    return render_template('gradebook.html', addStudentForm=addStudentForm, addAssignmentForm=addAssignmentForm, course=course, students=students, assignments=assignments)
+
+    addStudentForm = StudentForm()
+    addAssignmentForm = AssignmentForm()
+    return render_template('gradebook.html', addStudentForm=addStudentForm, addAssignmentForm=addAssignmentForm, course=course, students=students, assignments=assignments, grades=grades)
 
 ### About Tab
 @app.route("/about")

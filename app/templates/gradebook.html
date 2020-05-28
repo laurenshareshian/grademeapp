@@ -38,7 +38,7 @@
                                 </a>
                             </th>
                             {% for assignment in assignments%}
-                                <td> 100% </td>
+                                <td> {{ grades[students.index(student)][assignments.index(assignment)] | int }}%</td>
                             {% endfor %}
                             <td> </td>
                         </tr>

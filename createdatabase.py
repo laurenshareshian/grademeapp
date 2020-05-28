@@ -69,6 +69,12 @@ def createdatabase(database_url):
     )
     conn.commit()
 
+    cursor.execute(
+       "INSERT INTO student (first_name, last_name, year, email, telephone) "
+       "VALUES ('Lion', 'King', 2021, 'iluvlionss@gmail.com', '5555555555');"
+    )
+    conn.commit()
+
     ## Create teacher table
 
 
@@ -252,11 +258,7 @@ def createdatabase(database_url):
         ''',
         (datetime_now, 90, 2))
 
-    cursor.execute('''
-        INSERT INTO submission (submitted, grade, assignment)
-        VALUES (%s, %s, %s);
-        ''',
-        (datetime_now, 100, 2))
+
 
 
     cursor.execute('''
@@ -265,6 +267,11 @@ def createdatabase(database_url):
         ''')
     conn.commit()
 
+    cursor.execute('''
+        INSERT INTO submission (submitted, grade, assignment)
+        VALUES (%s, %s, %s);
+        ''',
+        (datetime_now, 60, 3))
 
     ### Create student_submission table
 
@@ -278,7 +285,7 @@ def createdatabase(database_url):
 
     cursor.execute('''
         INSERT into student_submission (student_id, submission_id)
-        VALUES (1, 2), (1, 3), (2, 1), (2, 4);
+        VALUES (1, 2), (1, 3), (2, 1), (2, 4), (1, 5);
         ''')
     conn.commit()
 
