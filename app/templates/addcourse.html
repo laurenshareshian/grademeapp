@@ -3,7 +3,7 @@
 <div class="container">
     <div class="form">
         <h3>Add New Course</h3>
-        <form action="{{ url_for('saveAddCourse') }}" method="post" novalidate>
+        <form action="{{ url_for('saveAddCourse', teacher_id=teacher_id) }}" method="post" novalidate>
             {{ addCourseForm.hidden_tag() }}
             <p>
                 {{ addCourseForm.title.label }}<br>

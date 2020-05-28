@@ -9,7 +9,7 @@
         <br>
         <div class="col-lg-4">
             <h4>Edit Student</h4>
-            <form action="{{ url_for('saveEditStudent', first_name=student.first_name, last_name=student.last_name, year=student.year, email=student.email, telephone=student.telephone, student_id=student.student_id) }}" method="post" novalidate>
+            <form action="{{ url_for('saveEditStudent', first_name=student.first_name, last_name=student.last_name, year=student.year, email=student.email, telephone=student.telephone, student_id=student.student_id,  course_id=course_id) }}" method="post" novalidate>
                 {{ editStudentForm.hidden_tag() }}
                 <p>
                     {{ editStudentForm.first_name.label }}<br>
@@ -34,7 +34,7 @@
                 {{ editStudentForm.submit1(value="Update Student") }}
             </form>
 
-            <form action="{{ url_for('deleteStudent', student_id=student.student_id) }}" method="post" novalidate>
+            <form action="{{ url_for('deleteStudent', student_id=student.student_id, course_id=course_id) }}" method="post" novalidate>
                 <input type="submit" value="Delete Student" style="margin-top:2%">
             </form>
         </div>

@@ -6,8 +6,8 @@
 <div class="container">
 	<div class="formscontainer">
 		<div class="form">
-	    <h3>Add New Student</h3>
-	    <form action="{{ url_for('saveAddStudent') }}" method="post" novalidate>
+	    <h3>Add New Student </h3>
+	    <form action="{{ url_for('saveAddStudent', course_id=course_id) }}" method="post" novalidate>
 	        {{ addStudentForm.hidden_tag() }}
 	        <p>
 	            {{ addStudentForm.first_name.label }}<br>

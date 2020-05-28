@@ -106,6 +106,12 @@ def createdatabase(database_url):
     )
     conn.commit()
 
+    cursor.execute(
+       "INSERT INTO teacher (first_name, last_name, email, telephone) "
+       "VALUES ('5G','Conspiracy Theorist','5G@gmail.com', '5555555555');"
+    )
+    conn.commit()
+
     ## Create course table
 
 
@@ -145,7 +151,19 @@ def createdatabase(database_url):
 
     cursor.execute(
        "INSERT INTO course (title, section, department, description, units) "
-       "VALUES ('Advanced Tickling', '100', 'HR Problems', 'Creepy stuff', 3);"
+       "VALUES ('Advanced Tickling', '100', 'HR Problems', 'Creepy stuff', 5);"
+    )
+    conn.commit()
+
+    cursor.execute(
+       "INSERT INTO course (title, section, department, description, units, teacher) "
+       "VALUES ('Expensive Remote Learning Course', '100', 'Science', 'same price as an in-person class without any labs', 5, 3);"
+    )
+    conn.commit()
+
+    cursor.execute(
+       "INSERT INTO course (title, section, department, description, units, teacher) "
+       "VALUES ('Electricity', '100', 'Science', 'electricity stuff', 5, 4);"
     )
     conn.commit()
 
@@ -179,7 +197,29 @@ def createdatabase(database_url):
        "VALUES ('Test 1', 'Derivatives', '2020-01-02', 50, 1);"
     )
     conn.commit()
+    cursor.execute(
+       "INSERT INTO assignment (title, description, due, points, course) "
+       "VALUES ('Exam 1', 'Slope', '2020-01-02', 50, 3);"
+    )
+    conn.commit()
 
+    cursor.execute(
+       "INSERT INTO assignment (title, description, due, points, course) "
+       "VALUES ('Basket 1', 'basket', '2020-01-02', 100, 2);"
+    )
+    conn.commit()
+
+    cursor.execute(
+       "INSERT INTO assignment (title, description, due, points, course) "
+       "VALUES ('Foot tickle', 'ticle', '2020-01-02', 100, 4);"
+    )
+    conn.commit()
+
+    cursor.execute(
+       "INSERT INTO assignment (title, description, due, points, course) "
+       "VALUES ('HW Exercises', 'chapter 1', '2020-01-02', 100, 6);"
+    )
+    conn.commit()
 
     ### Create submission table
 
@@ -256,7 +296,7 @@ def createdatabase(database_url):
 
     cursor.execute('''
         INSERT into student_course (student_id, course_id)
-        VALUES (1, 2), (1, 3), (2, 1), (3, 1);
+        VALUES (1, 1), (1, 2), (1, 3), (2, 1), (3, 1), (2, 3), (3, 5);
         ''')
     conn.commit()
 

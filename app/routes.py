@@ -1,42 +1,8 @@
-from flask import render_template, flash, redirect, url_for, request, g
+from flask import render_template, redirect, url_for, request
 from app import app
 from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, SubmissionForm
-from psycopg2 import connect, extensions, sql, extras, pool
+from psycopg2 import sql, extras, pool
 from urllib.parse import urlparse
-
-# def connect_db():
-#     result = urlparse(app.config['DATABASE_URL'])
-#     username = result.username
-#     password = result.password
-#     database = result.path[1:]
-#     hostname = result.hostname
-#     port = result.port
-#     print('hitting database', database)
-#     """Connects to the specific database."""
-#     conn = connect(
-#         database=database,
-#         user=username,
-#         password=password,
-#         host=hostname,
-#         port=port
-#     )
-#     return conn
-#
-#
-# def get_db():
-#     """Opens a new database connection if there is none yet for the
-#     current application context.
-#     """
-#     if not hasattr(g, 'molecule_db'):
-#         g.molecule_db = connect_db()
-#     return g.molecule_db
-#
-#
-# @app.teardown_appcontext
-# def close_db(error):
-#     """Closes the database again at the end of the request."""
-#     if hasattr(g, 'molecule_db'):
-#         g.molecule_db.close()
 
 result = urlparse(app.config['DATABASE_URL'])
 
@@ -57,12 +23,12 @@ db_pool = pool.ThreadedConnectionPool(
     port=port)
 
 
-@app.route('/')
-def index():
+@app.route('/gradebook/<course_id>')
+def gradebook(course_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    cursor.execute("SELECT * FROM course;")
-    course = cursor.fetchall()[0] # use calculus (the first one) as the landing page
+    cursor.execute(f"SELECT * FROM course WHERE course_id = {course_id};")
+    course = cursor.fetchall()[0]
     course = {
         'course_id': course[0],
         'title': course[1].strip(),
@@ -101,15 +67,15 @@ def about():
     return render_template("about.html")
 
 ### Add New Student Form
-@app.route('/addstudent', methods=['GET', 'POST'])
-def addStudent():
+@app.route('/addstudent/<course_id>', methods=['GET', 'POST'])
+def addStudent(course_id):
 
     addStudentForm = StudentForm()
-    return render_template('addstudent.html', addStudentForm=addStudentForm)
+    return render_template('addstudent.html', addStudentForm=addStudentForm, course_id=course_id)
 
 ### Save Add Student
-@app.route('/saveAddStudent', methods=['POST'])
-def saveAddStudent():
+@app.route('/saveAddStudent/<course_id>', methods=['POST'])
+def saveAddStudent(course_id):
 
     first_name = request.form['first_name']
     last_name = request.form['last_name']
@@ -120,24 +86,29 @@ def saveAddStudent():
     newstudent = {"first_name": first_name, "last_name": last_name, "email": email, "telephone": telephone, "year": year}
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    sql = f'''INSERT INTO student
-    (first_name, last_name, email, telephone, year)
-    VALUES (%s, %s, %s, %s, %s);'''
+    sql = f'''INSERT INTO student (first_name, last_name, email, telephone, year) VALUES (%s, %s, %s, %s, %s) RETURNING student_id AS last_id;;'''
     cursor.execute(sql,
                 (newstudent['first_name'],
                  newstudent["last_name"],
                  newstudent["email"],
                  newstudent["telephone"],
                  newstudent["year"]))
+
+    db_conn.commit()
+
+    student_id = cursor.fetchall()[0][0]
+    sql = f'''INSERT INTO student_course (student_id, course_id) VALUES (%s, %s);'''
+    cursor.execute(sql, (student_id, course_id))
     db_conn.commit()
     cursor.close()
+
     db_pool.putconn(db_conn)
-    return redirect(url_for('index'))
+    return redirect(url_for('gradebook', course_id=course_id))
 
 
 ### Edit Student Form
-@app.route('/editstudent/<student_id>', methods=['GET', 'POST'])
-def editStudent(student_id):
+@app.route('/editstudent/<student_id>/<course_id>', methods=['GET', 'POST'])
+def editStudent(student_id, course_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     cursor.execute(f"SELECT * "
@@ -158,15 +129,16 @@ def editStudent(student_id):
         student = cursor.fetchall()[0]
         student = {'student_id': student[0], 'first_name': student[1].strip(), 'last_name': student[2].strip(),
                    'year': student[3], 'email': student[4].strip(), 'telephone': student[5]}
+
     cursor.close()
     db_pool.putconn(db_conn)
 
     editStudentForm = StudentForm()
-    return render_template('editstudent.html', editStudentForm=editStudentForm, student=student)
+    return render_template('editstudent.html', editStudentForm=editStudentForm, student=student, course_id=course_id)
 
 ### Save Student Edits
-@app.route('/saveEditStudent/<first_name>/<last_name>/<year>/<email>/<telephone>/<student_id>', methods=['POST'])
-def saveEditStudent(first_name, last_name, year, email, telephone, student_id):
+@app.route('/saveEditStudent/<first_name>/<last_name>/<year>/<email>/<telephone>/<student_id>/<course_id>', methods=['POST'])
+def saveEditStudent(first_name, last_name, year, email, telephone, student_id, course_id):
 
     student = {}
     form_first_name = request.form['first_name']
@@ -212,20 +184,20 @@ def saveEditStudent(first_name, last_name, year, email, telephone, student_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('index'))
+    return redirect(url_for('gradebook', course_id=course_id))
 
 ### Delete Student
-@app.route('/deleteStudent/<student_id>', methods=['POST'])
-def deleteStudent(student_id):
+@app.route('/deleteStudent/<student_id>/<course_id>', methods=['POST'])
+def deleteStudent(student_id, course_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    sql = f'''DELETE FROM student WHERE student_id={student_id};'''
+    sql = f'''DELETE FROM student_course WHERE student_id={student_id} and course_id={course_id};'''
     cursor.execute(sql)
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
 
-    return redirect(url_for('index'))
+    return redirect(url_for('gradebook', course_id=course_id))
 
 ### Add New Assignment Form
 @app.route('/addassignment/<course>', methods=['GET', 'POST'])
@@ -243,7 +215,7 @@ def addAssignment(course):
     dict_cur.close()
     db_pool.putconn(db_conn)
 
-    return render_template('addassignment.html', addAssignmentForm=addAssignmentForm, course=course)
+    return render_template('addassignment.html', addAssignmentForm=addAssignmentForm, course_id=course)
 
 ### Save Add Assignment
 @app.route('/saveAddAssignment', methods=['POST'])
@@ -278,7 +250,7 @@ def saveAddAssignment():
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('index'))
+    return redirect(url_for('gradebook', course_id=course))
 
 ### Edit Assignment Form
 @app.route('/editassignment/<assignment_id>', methods=['GET', 'POST'])
@@ -373,7 +345,7 @@ def saveEditAssignment(title, description, due, points, assignment_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
 
-    print(assignment['points'], form_points)
+    print('here', assignment['points'], form_points)
     cursor.execute(f'''UPDATE assignment 
                         SET title = %s, 
                         description = %s, 
@@ -388,11 +360,11 @@ def saveEditAssignment(title, description, due, points, assignment_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('index'))
+    return redirect(url_for('gradebook', course_id = assignment['course']))
 
 ### Delete Assignment
-@app.route('/deleteAssigment/<assignment_id>', methods=['POST'])
-def deleteAssignment(assignment_id):
+@app.route('/deleteAssigment/<assignment_id>/<course_id>', methods=['POST'])
+def deleteAssignment(assignment_id, course_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     sql = f'''DELETE FROM assignment WHERE assignment_id = {assignment_id};'''
@@ -400,10 +372,10 @@ def deleteAssignment(assignment_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('index'))
+    return redirect(url_for('gradebook', course_id=course_id))
 
-@app.route('/addcourse', methods=['GET', 'POST'])
-def addCourse():
+@app.route('/addcourse/<teacher_id>', methods=['GET', 'POST'])
+def addCourse(teacher_id):
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
 
@@ -416,7 +388,7 @@ def addCourse():
     dict_cur.close()
     db_pool.putconn(db_conn)
 
-    return render_template('addcourse.html', addCourseForm=addCourseForm)
+    return render_template('addcourse.html', addCourseForm=addCourseForm, teacher_id=teacher_id)
 
 @app.route('/courses', methods=['GET', 'POST'])
 @app.route('/courses/<department>', methods=['GET', 'POST'])
@@ -440,15 +412,16 @@ def renderCourses(department="All"):
     db_pool.putconn(db_conn)
     return render_template('courses.html', courses=courses, departments=departments)
 
-@app.route('/f', methods=['POST'])
-def saveAddCourse():
+@app.route('/saveaddcourse/<teacher_id>', methods=['POST'])
+def saveAddCourse(teacher_id):
 
     title = request.form['title']
     section = request.form['section']
     department = request.form['department']
     description = request.form['description']
     units = request.form['units']
-    teacher = request.form['teacher'] or None
+    # teacher = request.form['teacher'] or None # i can put this back if joshua likes dropdown better
+    teacher = teacher_id
 
     newcourse = {
         "title": title,
@@ -475,7 +448,8 @@ def saveAddCourse():
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('renderCourses'))
+    # return redirect(url_for('renderCourses'))
+    return redirect(url_for('editTeacher', teacher_id=teacher))
 
 ### Edit Course Form
 @app.route('/editcourse/<course_id>', methods=['GET', 'POST'])
@@ -584,7 +558,8 @@ def saveEditCourse(title, section, department, description, units, course_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('renderCourses'))
+    # return redirect(url_for('renderCourses')) #
+    return redirect(url_for('editTeacher', teacher_id=course["teacher"]))
 
 ### Delete Course
 @app.route('/deleteCourse/<course_id>', methods=['POST'])
@@ -604,18 +579,38 @@ def addTeacher():
     addTeacherForm = TeacherForm()
     return render_template('addteacher.html', addTeacherForm=addTeacherForm)
 
-@app.route('/teachers', methods=['GET', 'POST'])
-def renderTeachers():
+@app.route('/', methods=['GET', 'POST'])
+@app.route('/<department>', methods=['GET', 'POST'])
+def renderTeachers(department='All'):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    cursor.execute("SELECT * FROM teacher;")
+    cursor.execute(f"SELECT department FROM course;")
+    rows = cursor.fetchall()
+    departments = list(set([row[0].strip() for row in rows]))
+
+    if department == 'All':
+        cursor.execute("SELECT DISTINCT teacher_id, first_name, last_name, email, telephone, course.department FROM teacher "
+                       f"LEFT OUTER JOIN course on teacher.teacher_id = course.teacher ;")
+    else:
+        cursor.execute(f"SELECT DISTINCT teacher_id, first_name, last_name, email, telephone, course.department FROM teacher "
+                       f"LEFT OUTER JOIN course on teacher.teacher_id = course.teacher "
+                       f" WHERE course.department = '{department}';"
+                        )
     teacherlist = cursor.fetchall()
+    print(teacherlist)
     teachers = []
     for teacher in teacherlist:
-        teachers.append({'teacher_id': teacher[0], 'first_name': teacher[1].strip(), 'last_name': teacher[2].strip(), 'email': teacher[3].strip(), 'telephone': teacher[4] })
+        if teacher[5]:
+            dept = teacher[5].strip()
+        else:
+            dept = None
+        teachers.append(
+            {'teacher_id': teacher[0], 'first_name': teacher[1].strip(), 'last_name': teacher[2].strip(),
+             'email': teacher[3].strip(), 'telephone': teacher[4], 'dept': dept})
+
     cursor.close()
     db_pool.putconn(db_conn)
-    return render_template('teachers.html', teachers=teachers)
+    return render_template('teachers.html', teachers=teachers, departments=departments)
 
 @app.route('/saveAddTeacher', methods=['POST'])
 def saveAddTeacher():

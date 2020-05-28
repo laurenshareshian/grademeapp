@@ -34,7 +34,7 @@
 	        {{ editAssignmentForm.submit2(value="Update Assignment") }}
 	    </form>
 
-	    <form action="{{ url_for('deleteAssignment', assignment_id=assignment.assignment_id) }}" method="post" novalidate>
+	    <form action="{{ url_for('deleteAssignment', assignment_id=assignment.assignment_id, course_id = assignment.course) }}" method="post" novalidate>
 	        <input type="submit" value="Delete Assignment" style="margin-top:2%">
 	    </form>
         </div>
@@ -51,7 +51,7 @@
                     <tbody>
                         {% for submission in assignment.submissions %}
                             <tr>
-                                <td><a href="{{ url_for('editStudent', student_id=submission.student_id) }}" > {{ submission.studentname }}</a></td>
+                                <td><a href="{{ url_for('editStudent', student_id=submission.student_id, course_id=assignment.course) }}" > {{ submission.studentname }}</a></td>
                                 <td>{{ submission.grade }}</td>
                                 <td>{{ submission.timestamp }}</td>
                             </tr>

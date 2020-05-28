@@ -42,7 +42,8 @@
         {% if noresults %}
         No results.
         {% endif%}
-        <a style="font-weight:bold;" href="{{ url_for('addCourse') }}">Add a course</a>
+{#        <a style="font-weight:bold;" href="{{ url_for('addCourse') }}">Add a course</a>#}
+        <a style="font-weight:bold;" href="{{ url_for('addCourse', teacher_id=teacher_id) }}">Add a course</a>
     </div>
 </div>
 {% endblock %}
