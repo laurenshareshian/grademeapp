@@ -6,12 +6,12 @@
 	<div class="formscontainer">
 		<div class="form">
 		    <h3>Add New Assignment</h3>
-	    	<form action="{{ url_for('saveAddAssignment') }}" method="post" novalidate>
+	    	<form action="{{ url_for('saveAddAssignment', course_id=course_id) }}" method="post" novalidate>
 		        {{ addAssignmentForm.hidden_tag() }}
-		        <p>
-		            {{ addAssignmentForm.course.label }}<br>
-		            {{ addAssignmentForm.course() }}
-		        </p>
+{#		        <p>#}
+{#		            {{ addAssignmentForm.course.label }}<br>#}
+{#		            {{ addAssignmentForm.course() }}#}
+{#		        </p>#}
 		        <p>
 		            {{ addAssignmentForm.title.label }}<br>
 		            {{ addAssignmentForm.title(size=32) }}
@@ -28,7 +28,7 @@
 		            {{ addAssignmentForm.description.label }}<br>
 		            {{ addAssignmentForm.description(size=32) }}
 		        </p>
-                    <input type="hidden" name="course" value="{{ course }}">
+{#                    <input type="hidden" name="course" value="{{ course }}">#}
 		        <p>{{ addAssignmentForm.submit2() }}</p>
 		    </form>
 		</div>

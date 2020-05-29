@@ -9,27 +9,27 @@
         <br>
         <div class="col-lg-4">
             <h4>Edit Student</h4>
-            <form action="{{ url_for('saveEditStudent', first_name=student.first_name, last_name=student.last_name, year=student.year, email=student.email, telephone=student.telephone, student_id=student.student_id,  course_id=course_id) }}" method="post" novalidate>
+            <form action="{{ url_for('saveEditStudent', student_id=student.student_id,  course_id=course_id) }}" method="post" novalidate>
                 {{ editStudentForm.hidden_tag() }}
                 <p>
                     {{ editStudentForm.first_name.label }}<br>
-                    {{ editStudentForm.first_name(placeholder=student.first_name, size=32) }}
+                    {{ editStudentForm.first_name(value=student.first_name.strip(), size=32) }}
                 </p>
                 <p>
                     {{ editStudentForm.last_name.label }}<br>
-                    {{ editStudentForm.last_name(placeholder=student.last_name, size=32) }}
+                    {{ editStudentForm.last_name(value=student.last_name.strip(), size=32) }}
                 </p>
                 <p>
                     {{ editStudentForm.email.label }}<br>
-                    {{ editStudentForm.email(placeholder=student.email, size=32) }}
+                    {{ editStudentForm.email(value=student.email.strip(), size=32) }}
                 </p>
                 <p>
-                    {{ editStudentForm.telephone.label }} (enter 0 to delete) <br>
-                    {{ editStudentForm.telephone(placeholder=student.telephone, size=32) }}
+                    {{ editStudentForm.telephone.label }} <br>
+                    {{ editStudentForm.telephone(value=student.telephone.strip(), size=32) }}
                 </p>
                 <p>
                     {{ editStudentForm.year.label }}<br>
-                    {{ editStudentForm.year(placeholder=student.year, size=32) }}
+                    {{ editStudentForm.year(value=student.year, size=32) }}
                 </p>
                 {{ editStudentForm.submit1(value="Update Student") }}
             </form>

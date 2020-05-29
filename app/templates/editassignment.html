@@ -9,29 +9,25 @@
         <br>
         <div class="col-lg-4">
             <h4>Edit Assignment</h4>
-	    <form action="{{ url_for('saveEditAssignment', title=assignment.title, description = assignment.description, due=assignment.due, points=assignment.points, assignment_id=assignment.assignment_id) }}" method="post" novalidate>
+	    <form action="{{ url_for('saveEditAssignment', assignment_id=assignment.assignment_id, course_id=assignment.course) }}" method="post" novalidate>
 	    	{{ editAssignmentForm.hidden_tag() }}
 	        <p>
 	            {{ editAssignmentForm.title.label }}<br>
-	            {{ editAssignmentForm.title(placeholder=assignment.title, size=32) }}
+	            {{ editAssignmentForm.title(value=assignment.title.strip(), size=32) }}
 	        </p>
 	        <p>
 	            {{ editAssignmentForm.due.label }}<br>
-	            {{ editAssignmentForm.due(placeholder=assignment.due, size=32) }}
+	            {{ editAssignmentForm.due(value=assignment.due, size=32) }}
 	        </p>
 	        <p>
 	            {{ editAssignmentForm.points.label }}<br>
-	            {{ editAssignmentForm.points(placeholder=assignment.points, size=32) }}
+	            {{ editAssignmentForm.points(value=assignment.points, size=32) }}
 	        </p>
           <p>
 	            {{ editAssignmentForm.description.label }}<br>
-	            {{ editAssignmentForm.description(placeholder=assignment.description, size=32) }}
+	            {{ editAssignmentForm.description(value=assignment.description.strip(), size=32) }}
 	        </p>
-{#	        <p>#}
-{#	            {{ editAssignmentForm.course.label }}<br>#}
-{#	            {{ editAssignmentForm.course() }}#}
-{#	        </p>#}
-            <input type="hidden" name="course" value="{{ assignment.course }}">
+
 	        {{ editAssignmentForm.submit2(value="Update Assignment") }}
 	    </form>
 

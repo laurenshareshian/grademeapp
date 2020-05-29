@@ -1,38 +1,39 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateTimeField, IntegerField, SelectField, SelectMultipleField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, NumberRange, Length
+from wtforms import StringField, SubmitField, DateTimeField, IntegerField, FloatField, SelectField, SelectMultipleField
+from wtforms.validators import DataRequired, Email, NumberRange, Length
+from wtforms.fields.html5 import DateField
 import datetime
 
 class TeacherForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
-    telephone = StringField('Phone', validators=[DataRequired(), Length(max=10)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    telephone = StringField('Phone', validators=[Length(max=10)])
     submit1 = SubmitField('Submit')
 
 class StudentForm(FlaskForm):
     first_name = StringField('First', validators=[DataRequired()])
     last_name = StringField('Last', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired()])
-    telephone = StringField('Phone', validators=[DataRequired()])
-    year = StringField('Year', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    telephone = StringField('Phone', validators=[Length(max=10)])
+    year = IntegerField('Year', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
 
 class AssignmentForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
-    due = StringField('Due', validators=[DataRequired()])
-    points = StringField('Points', validators=[DataRequired()])
-    course = SelectField('Course')
+    due = DateField("Due", validators=[DataRequired()])
+    points = IntegerField('Points', validators=[DataRequired()])
+    course = IntegerField('Course')
     submit2 = SubmitField('Submit')
 
 class CourseForm(FlaskForm):
-    title = StringField('Course title', validators=[DataRequired()])
-    section = StringField('Section', validators=[DataRequired()])
+    title = StringField('Title', validators=[DataRequired()])
+    section = IntegerField('Section', validators=[DataRequired()])
     department = StringField('Department', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
-    units = StringField('Units', validators=[DataRequired()])
-    teacher = SelectField('Teacher')
+    units = FloatField('Units', validators=[DataRequired()])
+    teacher = IntegerField('Teacher')
     submit1 = SubmitField('Submit')
 
 class SubmissionForm(FlaskForm):
