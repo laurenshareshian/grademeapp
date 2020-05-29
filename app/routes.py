@@ -56,33 +56,6 @@ def gradebook(course_id):
     for assignment in assignmentlist:
         assignments.append({'assignment_id': assignment[0], 'title': assignment[1].strip(), 'description': assignment[2].strip(), 'due': assignment[3], 'points': assignment[4] })
 
-    # cursor.execute(f"SELECT student_course.course_id, student.student_id, assignment.assignment_id, submission.grade "
-    #                f"FROM student "
-    #                f"LEFT OUTER JOIN student_submission ON student.student_id = student_submission.student_id "
-    #                f"LEFT OUTER JOIN submission ON student_submission.submission_id = submission.submission_id "
-    #                f"LEFT OUTER JOIN assignment ON submission.assignment = assignment.assignment_id "
-    #                f"LEFT OUTER JOIN student_course ON student.student_id = student_course.student_id "
-    #                f"WHERE student_course.course_id = {course['course_id']} "
-    #                f"AND (assignment.course = {course['course_id']} OR assignment.course IS NULL);")
-    # results = cursor.fetchall()
-    # print('results', results)
-    # student_ids = [result[1] for result in results if result[1] is not None]
-    # assignment_ids = [result[2] for result in results if result[2] is not None]
-    # if len(student_ids):
-    #     student_ids = set(student_ids)
-    # if len(assignment_ids):
-    #     assignment_ids = set(assignment_ids)
-    # print(len(student_ids), len(assignment_ids))
-    # student_assignment_dict = {(result[1], result[2]): result[3] for result in results}
-    # grades = np.zeros((max(len(student_ids), 1), max(len(assignment_ids), 1)))
-    # print(student_assignment_dict)
-    # for i, assignment_id in enumerate(assignment_ids):
-    #     for j, student_id in enumerate(student_ids):
-    #         if (student_id, assignment_id) in student_assignment_dict:
-    #             grades[j, i] = student_assignment_dict[(student_id, assignment_id)]
-    #         else:
-    #             grades[j, i] = None
-
     grades = np.zeros((max(len(students), 1), max(len(assignments), 1)))
     for i, assignment in enumerate(assignments):
         for j, student in enumerate(students):
@@ -342,13 +315,13 @@ def editAssignment(assignment_id):
 
     # set the course dropdown
     editAssignmentForm = AssignmentForm()
-    cursor.execute('SELECT course_id, title FROM course;')
-    choices = [(row[0], row[1]) for row in cursor]
-    choices.append(('', 'NULL'))
-    editAssignmentForm.course.choices = choices
-    cursor.execute('SELECT course FROM assignment WHERE assignment_id= %s', assignment_id)
-    editAssignmentForm.course.default = cursor.fetchone()[0] or ''
-    editAssignmentForm.process()
+    # cursor.execute('SELECT course_id, title FROM course;')
+    # choices = [(row[0], row[1]) for row in cursor]
+    # choices.append(('', 'NULL'))
+    # editAssignmentForm.course.choices = choices
+    # cursor.execute('SELECT course FROM assignment WHERE assignment_id= %s', assignment_id)
+    # editAssignmentForm.course.default = cursor.fetchone()[0] or ''
+    # editAssignmentForm.process()
 
     cursor.close()
     db_pool.putconn(db_conn)
@@ -379,18 +352,16 @@ def saveEditAssignment(title, description, due, points, assignment_id):
         assignment["due"] = form_due
     else:
         assignment["due"] = due
-    print(form_points)
     if form_points:
         assignment["points"] = form_points
     else:
         assignment["points"] = points
 
-    assignment["course"] = form_course.strip() or None
+    assignment["course"] = form_course.strip()
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
 
-    print('here', assignment['points'], form_points)
     cursor.execute(f'''UPDATE assignment 
                         SET title = %s, 
                         description = %s, 
@@ -540,13 +511,13 @@ def editCourse(course_id):
 
     # set the teacher dropdown
     editCourseForm = CourseForm()
-    cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher;')
-    choices = [(row[0], '{} {}'.format(row[1], row[2])) for row in cursor]
-    choices.append(('', 'NULL'))
-    editCourseForm.teacher.choices = choices
-    cursor.execute('SELECT teacher FROM course WHERE course_id= %s', course_id)
-    editCourseForm.teacher.default = cursor.fetchone()[0] or ''
-    editCourseForm.process()
+    # cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher;')
+    # choices = [(row[0], '{} {}'.format(row[1], row[2])) for row in cursor]
+    # choices.append(('', 'NULL'))
+    # editCourseForm.teacher.choices = choices
+    # cursor.execute('SELECT teacher FROM course WHERE course_id= %s', course_id)
+    # editCourseForm.teacher.default = cursor.fetchone()[0] or ''
+    # editCourseForm.process()
 
     cursor.close()
     db_pool.putconn(db_conn)
@@ -587,7 +558,7 @@ def saveEditCourse(title, section, department, description, units, course_id):
     else:
         course["units"] = units
 
-    course['teacher'] = form_teacher or None
+    course['teacher'] = form_teacher
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
@@ -642,7 +613,7 @@ def renderTeachers(department='All'):
                        f" WHERE course.department = '{department}';"
                         )
     teacherlist = cursor.fetchall()
-    print(teacherlist)
+
     teachers = []
     for teacher in teacherlist:
         if teacher[5]:
@@ -736,7 +707,7 @@ def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
             teacher["telephone"] = form_telephone
     else:
         teacher["telephone"] = telephone
-    print(teacher)
+
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
     sql = f'''UPDATE teacher SET first_name = %s, last_name = %s, email = %s, telephone = %s WHERE teacher_id = %s;'''
