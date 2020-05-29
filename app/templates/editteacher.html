@@ -9,23 +9,30 @@
         <br>
         <div class="col-lg-4">
             <h4>Edit Teacher</h4>
-	    <form action="{{ url_for('saveEditTeacher', first_name=teacher.first_name, last_name = teacher.last_name, email=teacher.email, telephone=teacher.telephone, teacher_id=teacher.teacher_id) }}" method="post" novalidate>
+	    <form action="{{ url_for('saveEditTeacher', first_name=teacher.first_name, last_name = teacher.last_name, email=teacher.email, telephone=teacher.telephone, teacher_id=teacher.teacher_id) }}" method="post">
 	    	{{ editTeacherForm.hidden_tag() }}
 	        <p>
 	            {{ editTeacherForm.first_name.label }}<br>
-	            {{ editTeacherForm.first_name(placeholder=teacher.first_name, size=32) }}
+	            {{ editTeacherForm.first_name(value=teacher.first_name, size=32) }}
 	        </p>
             <p>
 	            {{ editTeacherForm.last_name.label }}<br>
-	            {{ editTeacherForm.last_name(placeholder=teacher.last_name, size=32) }}
+	            {{ editTeacherForm.last_name(value=teacher.last_name, size=32) }}
 	        </p>
             <p>
 	            {{ editTeacherForm.email.label }}<br>
-	            {{ editTeacherForm.email(placeholder=teacher.email, size=32) }}
+	            {{ editTeacherForm.email(value=teacher.email, size=32) }}
 	        </p>
             <p>
 	            {{ editTeacherForm.telephone.label }} (edit 0 to delete) <br>
-	            {{ editTeacherForm.telephone(placeholder=teacher.telephone, size=32) }}
+	            {{ editTeacherForm.telephone(value=teacher.telephone, size=32) }}
+                  {% if editTeacherForm.telephone.errors %}
+                    <ul class=errors>
+                    {% for error in editTeacherForm.telephone.errors %}
+                      <li>{{ error }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
 	        </p>
 	        {{ editTeacherForm.submit1(value="Update Teacher") }}
 	    </form>

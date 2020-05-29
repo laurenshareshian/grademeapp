@@ -1,13 +1,13 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateTimeField, IntegerField, SelectField, SelectMultipleField
-from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, NumberRange
+from wtforms.validators import ValidationError, DataRequired, Email, EqualTo, NumberRange, Length
 import datetime
 
 class TeacherForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
     last_name = StringField('Last name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired()])
-    telephone = StringField('Phone', validators=[DataRequired()])
+    telephone = StringField('Phone', validators=[DataRequired(), Length(max=10)])
     submit1 = SubmitField('Submit')
 
 class StudentForm(FlaskForm):

@@ -436,7 +436,6 @@ def saveAddCourse(teacher_id):
     department = request.form['department']
     description = request.form['description']
     units = request.form['units']
-    # teacher = request.form['teacher'] or None # i can put this back if joshua likes dropdown better
     teacher = teacher_id
 
     newcourse = {
@@ -464,7 +463,6 @@ def saveAddCourse(teacher_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    # return redirect(url_for('renderCourses'))
     return redirect(url_for('editTeacher', teacher_id=teacher))
 
 ### Edit Course Form
@@ -680,49 +678,78 @@ def editTeacher(teacher_id):
 
 @app.route('/saveEditTeacher/<first_name>/<last_name>/<email>/<telephone>/<teacher_id>', methods=['POST'])
 def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
-
-    form_first_name = request.form['first_name']
-    form_last_name = request.form['last_name']
-    form_email = request.form['email']
-    form_telephone = request.form['telephone']
-    # if the user changed any of these, replace them in database
+    form = TeacherForm(request.form)
     teacher = {}
-    # if the user changed any of these, replace them in database
-    if form_first_name:
-        teacher["first_name"] = form_first_name
-    else:
-        teacher["first_name"] = first_name
-    if form_last_name:
-        teacher["last_name"] = form_last_name
-    else:
-        teacher["last_name"] = last_name
-    if form_email:
-        teacher["email"] = form_email
-    else:
-        teacher["email"] =email
-    if form_telephone:
-        if form_telephone == "0":
+    if request.method == 'POST' and form.validate():
+        teacher["first_name"] = request.form['first_name']
+        teacher["last_name"] = request.form['last_name']
+        teacher["email"] = request.form['email']
+        teacher["telephone"] = request.form['telephone']
+        if teacher["telephone"] == "0":
             teacher["telephone"] = ""
-        else:
-            teacher["telephone"] = form_telephone
-    else:
-        teacher["telephone"] = telephone
+        print(teacher)
+        db_conn = db_pool.getconn()
+        cursor = db_conn.cursor()
+        sql = f'''UPDATE teacher SET first_name = %s, last_name = %s, email = %s, telephone = %s WHERE teacher_id = %s;'''
+        cursor.execute(sql,
+                    (teacher['first_name'],
+                     teacher['last_name'],
+                     teacher['email'],
+                     teacher['telephone'],
+                     teacher_id))
 
-    db_conn = db_pool.getconn()
-    cursor = db_conn.cursor()
-    sql = f'''UPDATE teacher SET first_name = %s, last_name = %s, email = %s, telephone = %s WHERE teacher_id = %s;'''
-    cursor.execute(sql,
-                (teacher['first_name'],
-                 teacher['last_name'],
-                 teacher['email'],
-                 teacher['telephone'],
-                 teacher_id))
-
-    db_conn.commit()
-    cursor.close()
-    db_pool.putconn(db_conn)
+        db_conn.commit()
+        cursor.close()
+        db_pool.putconn(db_conn)
 
     return redirect(url_for('renderTeachers'))
+
+# @app.route('/saveEditTeacher/<first_name>/<last_name>/<email>/<telephone>/<teacher_id>', methods=['POST'])
+# def saveEditTeacher(first_name, last_name, email, telephone, teacher_id):
+#     form_first_name, form_last_name, form_email, form_telephone = None, None, None, None
+#     form = TeacherForm(request.form)
+#     if request.method == 'POST' and form.validate():
+#         form_first_name = request.form['first_name']
+#         form_last_name = request.form['last_name']
+#         form_email = request.form['email']
+#         form_telephone = request.form['telephone']
+#     teacher = {}
+#     # if the user changed any of these, replace them in database
+#     if form_first_name:
+#         teacher["first_name"] = form_first_name
+#     else:
+#         teacher["first_name"] = first_name
+#     if form_last_name:
+#         teacher["last_name"] = form_last_name
+#     else:
+#         teacher["last_name"] = last_name
+#     if form_email:
+#         teacher["email"] = form_email
+#     else:
+#         teacher["email"] =email
+#     if form_telephone:
+#         if form_telephone == "0":
+#             teacher["telephone"] = ""
+#         else:
+#             teacher["telephone"] = form_telephone
+#     else:
+#         teacher["telephone"] = telephone
+#
+#     db_conn = db_pool.getconn()
+#     cursor = db_conn.cursor()
+#     sql = f'''UPDATE teacher SET first_name = %s, last_name = %s, email = %s, telephone = %s WHERE teacher_id = %s;'''
+#     cursor.execute(sql,
+#                 (teacher['first_name'],
+#                  teacher['last_name'],
+#                  teacher['email'],
+#                  teacher['telephone'],
+#                  teacher_id))
+#
+#     db_conn.commit()
+#     cursor.close()
+#     db_pool.putconn(db_conn)
+#
+#     return redirect(url_for('renderTeachers'))
 
 @app.route('/deleteTeacher/<teacher_id>', methods=['POST'])
 def deleteTeacher(teacher_id):
