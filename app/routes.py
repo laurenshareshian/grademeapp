@@ -1,9 +1,11 @@
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, session
 from app import app
 from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, SubmissionForm
 from psycopg2 import sql, extras, pool
 from urllib.parse import urlparse
 import numpy as np
+
+app.secret_key = "cleverpassword"
 
 result = urlparse(app.config['DATABASE_URL'])
 
@@ -23,6 +25,33 @@ db_pool = pool.ThreadedConnectionPool(
     host=hostname,
     port=port)
 
+def handle_login():
+    if 'user' not in session:
+        db_conn = db_pool.getconn()
+        cursor = db_conn.cursor()
+
+        cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher')
+        row = cursor.fetchone()
+        session['user'] = {'id': row[0], 'name': '{} {}'.format(row[1], row[2])}
+
+        cursor.close()
+        db_pool.putconn(db_conn)
+
+def get_teachers():
+    db_conn = db_pool.getconn()
+    cursor = db_conn.cursor()
+
+    cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher')
+    rows = [{'id': c[0], 'name': '{} {}'.format(c[1], c[2])} for c in cursor]
+    session['teachers'] = rows
+
+    cursor.close()
+    db_pool.putconn(db_conn)
+
+@app.before_request
+def before_request():
+    handle_login()
+    get_teachers()
 
 @app.route('/gradebook/<course_id>')
 def gradebook(course_id):
@@ -735,6 +764,24 @@ def addsubmission():
         return redirect(url_for('viewsubmissions'))
 
 
+### Login route
+@app.route('/login/<id>', methods=['GET'])
+def login(id):
+    db_conn = db_pool.getconn()
+    cursor = db_conn.cursor()
+
+    cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher WHERE teacher_id = %s', id)
+    row = cursor.fetchone()
+    if not row:
+        abort(404, 'No teacher found for id')
+
+    session['user'] = {'id': row[0], 'name': '{} {}'.format(row[1], row[2])}
+
+    cursor.close()
+    db_pool.putconn(db_conn)
+
+    return redirect(url_for('renderTeachers'))
+
 ### Admin page
 @app.route('/admin', methods=['GET'])
 @app.route('/admin/<table>', methods=['GET', 'POST'])
@@ -792,3 +839,4 @@ def viewadmin(table=None):
         db_pool.putconn(db_conn)
 
         return redirect('/admin/{}'.format(table))
+
