@@ -1,31 +1,15 @@
-from flask import render_template, redirect, url_for, request, session
+from flask import render_template, redirect, url_for, request, session, abort, g
 from app import app
 from app.forms import TeacherForm, StudentForm, AssignmentForm, CourseForm, SubmissionForm
-from psycopg2 import sql, extras, pool
+from psycopg2 import sql, extras, pool, OperationalError, errorcodes, errors
 from urllib.parse import urlparse
 import numpy as np
+from app.db import db_pool
 
 app.secret_key = "cleverpassword"
 
-result = urlparse(app.config['DATABASE_URL'])
-
-username = result.username
-password = result.password
-database = result.path[1:]
-hostname = result.hostname
-port = result.port
-print(username, password, database, hostname, port)
-
-db_pool = pool.ThreadedConnectionPool(
-    1,
-    20,
-    database=database,
-    user=username,
-    password=password,
-    host=hostname,
-    port=port)
-
 def handle_login():
+    """Handle user switching"""
     if 'user' not in session:
         db_conn = db_pool.getconn()
         cursor = db_conn.cursor()
@@ -38,6 +22,7 @@ def handle_login():
         db_pool.putconn(db_conn)
 
 def get_teachers():
+    """Get list of teachers for login dropdown"""
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
 
@@ -48,9 +33,14 @@ def get_teachers():
     cursor.close()
     db_pool.putconn(db_conn)
 
+def handle_error():
+    """Take any live error from the session and set it on g"""
+    g.error = session.pop('error', None)
+
 @app.before_request
 def before_request():
     handle_login()
+    handle_error()
     get_teachers()
 
 @app.route('/gradebook/<course_id>')
@@ -361,12 +351,12 @@ def saveEditAssignment(course_id, assignment_id):
         db_conn = db_pool.getconn()
         cursor = db_conn.cursor()
 
-        cursor.execute(f'''UPDATE assignment 
-                            SET title = %s, 
-                            description = %s, 
-                            due = %s, 
-                            points = %s, 
-                            course = %s 
+        cursor.execute(f'''UPDATE assignment
+                            SET title = %s,
+                            description = %s,
+                            due = %s,
+                            points = %s,
+                            course = %s
                             WHERE assignment_id = %s''',
                        (assignment['title'], assignment['description'],
                         assignment['due'], assignment['points'],
@@ -782,11 +772,11 @@ def login(id):
 
     return redirect(url_for('renderTeachers'))
 
+
 ### Admin page
 @app.route('/admin', methods=['GET'])
 @app.route('/admin/<table>', methods=['GET', 'POST'])
 def viewadmin(table=None):
-    result = urlparse(app.config['DATABASE_URL'])
 
     db_conn = db_pool.getconn()
 
@@ -813,8 +803,13 @@ def viewadmin(table=None):
         table_names = [name[0] for name in cur.fetchall()]
         cur.close()
 
+        if table not in table_names:
+            abort(404, 'Invalid table name')
+
         dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
-        dict_cur.execute('SELECT * FROM {};'.format(table))
+        dict_cur.execute(
+            sql.SQL('SELECT * FROM {}').format(sql.Identifier(table))
+        )
         columns = [desc[0] for desc in dict_cur.description]
         records = dict_cur.fetchall()
         dict_cur.close()
@@ -826,17 +821,23 @@ def viewadmin(table=None):
         values = [v if v != '' else None for v in request.form.values()]
 
         cur = db_conn.cursor()
-        cur.execute(
-            sql.SQL('INSERT INTO {} VALUES ({})').format(
-                sql.Identifier(table),
-                sql.SQL(', ').join(sql.Placeholder() * len(values))
-            ),
-            values
-        )
-        db_conn.commit()
-        cur.close()
+        try:
+            cur.execute(
+                sql.SQL('INSERT INTO {} VALUES ({})').format(
+                    sql.Identifier(table),
+                    sql.SQL(', ').join(sql.Placeholder() * len(values))
+                ),
+                values
+            )
+            db_conn.commit()
+        except Exception as err:
+            session['error'] = str(err)
+            db_conn.rollback()
 
+        cur.close()
         db_pool.putconn(db_conn)
 
         return redirect('/admin/{}'.format(table))
+
+
 
