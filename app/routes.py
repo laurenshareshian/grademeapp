@@ -375,7 +375,6 @@ def addCourse(teacher_id):
 
     dict_cur.close()
     db_pool.putconn(db_conn)
-
     return render_template('addcourse.html', addCourseForm=addCourseForm, teacher_id=teacher_id)
 
 @app.route('/courses', methods=['GET', 'POST'])
@@ -409,15 +408,13 @@ def saveAddCourse(teacher_id):
     department = request.form['department']
     description = request.form['description']
     units = request.form['units']
-    teacher = teacher_id
 
     newcourse = {
         "title": title,
         "section": section,
         "department": department,
         "description": description,
-        "units": units,
-        "teacher": teacher
+        "units": units
         }
 
     db_conn = db_pool.getconn()
@@ -431,12 +428,12 @@ def saveAddCourse(teacher_id):
                  newcourse["department"],
                  newcourse["description"],
                  newcourse["units"],
-                 newcourse["teacher"]
+                 teacher_id
                 ))
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('editTeacher', teacher_id=teacher))
+    return redirect(url_for('editTeacher', teacher_id=teacher_id))
 
 ### Edit Course Form
 @app.route('/editcourse/<course_id>', methods=['GET', 'POST'])
@@ -565,7 +562,7 @@ def renderTeachers(department='All'):
                        f" WHERE course.department = '{department}';"
                         )
     teacherlist = cursor.fetchall()
-
+    print(teacherlist)
     teachers = []
     for teacher in teacherlist:
         if teacher[5]:
