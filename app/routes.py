@@ -16,7 +16,7 @@ def handle_login():
 
         cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher')
         row = cursor.fetchone()
-        session['user'] = {'id': row[0], 'name': '{} {}'.format(row[1], row[2])}
+        session['user'] = {'id': str(row[0]), 'name': '{} {}'.format(row[1], row[2])}
 
         cursor.close()
         db_pool.putconn(db_conn)
@@ -381,6 +381,76 @@ def deleteAssignment(assignment_id, course_id):
     db_pool.putconn(db_conn)
     return redirect(url_for('gradebook', course_id=course_id))
 
+@app.route('/course/<course_id>', methods=['GET'])
+def view_course(course_id):
+    db_conn = db_pool.getconn()
+    cursor = db_conn.cursor()
+    cursor.execute(f"SELECT * FROM course WHERE course_id = %s", course_id)
+    course = cursor.fetchone()
+    course = {
+        'course_id': str(course[0]),
+        'title': course[1].strip(),
+        'section': course[2],
+        'department': course[3],
+        'description': course[4],
+        'units': course[5],
+        'teacher': course[6]
+    }
+
+    # perform search by first or last name
+    name_q = request.args.get('name') or ''
+    if name_q:
+        name = '{}%'.format(name_q.lower())
+        cursor.execute('''
+            SELECT *
+            FROM student
+            INNER JOIN student_course ON student_course.student_id = student.student_id
+            WHERE student_course.course_id = %s
+            AND (LOWER(student.first_name) LIKE %s OR LOWER(student.last_name) LIKE %s)
+            ''', (course['course_id'], name, name))
+    else:
+        cursor.execute('''
+            SELECT *
+            FROM student
+            INNER JOIN student_course ON student_course.student_id = student.student_id
+            WHERE student_course.course_id = %s
+            ''', course['course_id'])
+
+    studentlist = cursor.fetchall()
+    students = []
+    for student in studentlist:
+        students.append({'student_id': student[0], 'first_name': student[1].strip(),
+                         'last_name': student[2].strip(), 'year': student[3],
+                         'email': student[4].strip(), 'telephone': student[5] })
+
+    cursor.execute(f"SELECT * FROM assignment WHERE course = {course['course_id']};")
+    assignmentlist = cursor.fetchall()
+    assignments = []
+    for assignment in assignmentlist:
+        assignments.append({'assignment_id': assignment[0], 'title': assignment[1].strip(),
+                            'description': assignment[2].strip(), 'due': assignment[3], 'points': assignment[4] })
+
+    grades = np.zeros((max(len(students), 1), max(len(assignments), 1)))
+    for i, assignment in enumerate(assignments):
+        for j, student in enumerate(students):
+            cursor.execute(f"SELECT student.student_id, assignment.assignment_id, submission.grade "
+                           f"FROM student "
+                           f"LEFT OUTER JOIN student_submission ON student.student_id = student_submission.student_id "
+                           f"LEFT OUTER JOIN submission ON student_submission.submission_id = submission.submission_id "
+                           f"LEFT OUTER JOIN assignment ON submission.assignment = assignment.assignment_id "
+                           f"WHERE student.student_id = {student['student_id']} "
+                           f"AND assignment.assignment_id = {assignment['assignment_id']};")
+            results = cursor.fetchall()
+            if len(results):
+                grades[j, i] = results[0][2]
+            else:
+                grades[j, i] = None
+
+    cursor.close()
+    db_pool.putconn(db_conn)
+
+    return render_template('course.html', course=course, students=students, assignments=assignments, grades=grades, name=name_q)
+
 @app.route('/addcourse/<teacher_id>', methods=['GET', 'POST'])
 def addCourse(teacher_id):
     db_conn = db_pool.getconn()
@@ -568,36 +638,24 @@ def addTeacher():
 @app.route('/<department>', methods=['GET', 'POST'])
 def renderTeachers(department='All'):
     db_conn = db_pool.getconn()
-    cursor = db_conn.cursor()
-    cursor.execute(f"SELECT department FROM course;")
-    rows = cursor.fetchall()
-    departments = list(set([row[0].strip() for row in rows]))
+    dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
 
-    if department == 'All':
-        cursor.execute(f"SELECT DISTINCT teacher_id, first_name, last_name, email, "
-                       f"telephone, course.department FROM teacher "
-                       f"LEFT OUTER JOIN course on teacher.teacher_id = course.teacher ;")
-    else:
-        cursor.execute(f"SELECT DISTINCT teacher_id, first_name, last_name, email, telephone, course.department "
-                       f"FROM teacher "
-                       f"LEFT OUTER JOIN course on teacher.teacher_id = course.teacher "
-                       f" WHERE course.department = '{department}';"
-                        )
-    teacherlist = cursor.fetchall()
+    teacher_id = str(session.get('user')['id'])
 
-    teachers = []
-    for teacher in teacherlist:
-        if teacher[5]:
-            dept = teacher[5].strip()
-        else:
-            dept = None
-        teachers.append(
-            {'teacher_id': teacher[0], 'first_name': teacher[1].strip(), 'last_name': teacher[2].strip(),
-             'email': teacher[3].strip(), 'telephone': teacher[4], 'dept': dept})
+    dict_cur.execute('''
+        SELECT c.course_id, title, COUNT(student_id) as student_count FROM course c
+        LEFT JOIN student_course sc on c.course_id = sc.course_id
+        WHERE c.teacher = %s
+        GROUP BY c.course_id
+        ORDER BY title
+        ''', teacher_id)
 
-    cursor.close()
+    courses = dict_cur.fetchall()
+
+    dict_cur.close()
     db_pool.putconn(db_conn)
-    return render_template('teachers.html', teachers=teachers, departments=departments)
+
+    return render_template('index.html', courses=courses)
 
 @app.route('/saveAddTeacher', methods=['POST'])
 def saveAddTeacher():
