@@ -40,7 +40,7 @@ def createdatabase(database_url):
 
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
-       student_id SERIAL,
+       student_id SERIAL PRIMARY KEY,
        first_name        CHAR(50)     NOT NULL,
        last_name         CHAR(50)     NOT NULL,
        year              INT          NOT NULL,
