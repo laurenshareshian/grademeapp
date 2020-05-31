@@ -19,9 +19,9 @@ def handle_login():
         cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher')
         row = cursor.fetchone()
         session['user'] = {
-            'id': str(
-                row[0]), 'name': '{} {}'.format(
-                row[1], row[2])}
+            'id': str(row[0]),
+            'name': '{} {}'.format(row[1], row[2])
+        }
 
         cursor.close()
         db_pool.putconn(db_conn)
@@ -166,6 +166,10 @@ def saveEditTeacher(teacher_id):
              teacher['telephone'],
              teacher_id))
 
+        # update session if current user affected
+        if int(teacher_id) == int(session.get('user')['id']):
+            session['user'] = { 'id': teacher_id, 'name': '{} {}'.format(teacher['first_name'], teacher['last_name'])}
+
         db_conn.commit()
         cursor.close()
         db_pool.putconn(db_conn)
@@ -187,9 +191,9 @@ def deleteTeacher(teacher_id):
     cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher')
     row = cursor.fetchone()
     session['user'] = {
-        'id': str(
-            row[0]), 'name': '{} {}'.format(
-            row[1], row[2])}
+        'id': str(row[0]),
+        'name': '{} {}'.format(row[1], row[2])
+    }
     cursor.execute('SELECT teacher_id, first_name, last_name FROM teacher')
     rows = [{'id': c[0], 'name': '{} {}'.format(c[1], c[2])} for c in cursor]
     session['teachers'] = rows
