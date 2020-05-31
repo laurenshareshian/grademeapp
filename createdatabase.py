@@ -1,8 +1,7 @@
-# import the psycopg2 database adapter for PostgreSQL
-from psycopg2 import connect, extensions, sql
+from psycopg2 import connect, extensions
 from urllib.parse import urlparse
-from config import Config
 import time
+
 
 def createdatabase(database_url):
     result = urlparse(database_url)
@@ -11,32 +10,35 @@ def createdatabase(database_url):
     database = result.path[1:]
     hostname = result.hostname
     port = result.port
-    print('connecting to database', username, password, database, hostname, port)
+    print(
+        'connecting to database',
+        username,
+        password,
+        database,
+        hostname,
+        port)
     conn = connect(
-        database = database,
-        user = username,
-        password = password,
-        host = hostname,
-        port = port
+        database=database,
+        user=username,
+        password=password,
+        host=hostname,
+        port=port
     )
 
     # get the isolation level for autocommit
     # set the isolation level for the connection's cursors
     # will raise ActiveSqlTransaction exception otherwise
     autocommit = extensions.ISOLATION_LEVEL_AUTOCOMMIT
-    conn.set_isolation_level( autocommit )
+    conn.set_isolation_level(autocommit)
 
     # instantiate a cursor object from the connection
     cursor = conn.cursor()
 
-    ## Create student table
+    # Create student table
 
-
-    sql = f"DROP TABLE IF EXISTS student;"
+    sql = "DROP TABLE IF EXISTS student;"
     cursor.execute(sql)
-    print('here')
     conn.commit()
-
 
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
@@ -52,31 +54,30 @@ def createdatabase(database_url):
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO student (first_name, last_name, year, email, telephone) "
-       "VALUES ('Kanye', 'West',2020, 'kanye@gmail.com', '6094397996');"
+        "INSERT INTO student (first_name, last_name, year, email, telephone) "
+        "VALUES ('Kanye', 'West',2020, 'kanye@gmail.com', '6094397996');"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO student (first_name, last_name, year, email, telephone) "
-       "VALUES ('Anthony', 'Fauci', 2021, 'fauci@gmail.com', '5555555555');"
+        "INSERT INTO student (first_name, last_name, year, email, telephone) "
+        "VALUES ('Anthony', 'Fauci', 2021, 'fauci@gmail.com', '5555555555');"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO student (first_name, last_name, year, email, telephone) "
-       "VALUES ('Tiger', 'King', 2021, 'iluvtigers@gmail.com', '5555555555');"
+        "INSERT INTO student (first_name, last_name, year, email, telephone) "
+        "VALUES ('Tiger', 'King', 2021, 'iluvtigers@gmail.com', '5555555555');"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO student (first_name, last_name, year, email, telephone) "
-       "VALUES ('Lion', 'King', 2021, 'iluvlionss@gmail.com', '5555555555');"
+        "INSERT INTO student (first_name, last_name, year, email, telephone) "
+        "VALUES ('Lion', 'King', 2021, 'iluvlionss@gmail.com', '5555555555');"
     )
     conn.commit()
 
-    ## Create teacher table
-
+    # Create teacher table
 
     sql = f"DROP TABLE IF EXISTS teacher;"
     cursor.execute(sql)
@@ -95,31 +96,30 @@ def createdatabase(database_url):
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO teacher (first_name, last_name, email, telephone) "
-       "VALUES ('Lauren','Shareshian','lauren@gmail.com', '6094397996');"
+        "INSERT INTO teacher (first_name, last_name, email, telephone) "
+        "VALUES ('Lauren','Shareshian','lauren@gmail.com', '6094397996');"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO teacher (first_name, last_name, email, telephone) "
-       "VALUES ('Joshua','Cox','cox@gmail.com', '5555555555');"
+        "INSERT INTO teacher (first_name, last_name, email, telephone) "
+        "VALUES ('Joshua','Cox','cox@gmail.com', '5555555555');"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO teacher (first_name, last_name, email, telephone) "
-       "VALUES ('Elon','Musk Baby','baby@gmail.com', '5555555555');"
+        "INSERT INTO teacher (first_name, last_name, email, telephone) "
+        "VALUES ('Elon','Musk Baby','baby@gmail.com', '5555555555');"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO teacher (first_name, last_name, email, telephone) "
-       "VALUES ('5G','Conspiracy Theorist','5G@gmail.com', '5555555555');"
+        "INSERT INTO teacher (first_name, last_name, email, telephone) "
+        "VALUES ('5G','Conspiracy Theorist','5G@gmail.com', '5555555555');"
     )
     conn.commit()
 
-    ## Create course table
-
+    # Create course table
 
     sql = f"DROP TABLE IF EXISTS course;"
     cursor.execute(sql)
@@ -140,41 +140,42 @@ def createdatabase(database_url):
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO course (title, section, department, description, units, teacher) "
-       "VALUES ('Calculus', '100', 'Math', 'Integrals', 4, 1);"
-    )
+        "INSERT INTO course (title, section, department, "
+        "description, units, teacher) "
+        "VALUES ('Calculus', '100', 'Math', 'Integrals', 4, 1);")
     conn.commit()
     cursor.execute(
-       "INSERT INTO course (title, section, department, description, units, teacher) "
-       "VALUES ('Basketweaving', '400', 'Art', 'Weaving stuff', 3, 2);"
-    )
+        "INSERT INTO course (title, section, department, "
+        "description, units, teacher) "
+        "VALUES ('Basketweaving', '400', 'Art', 'Weaving stuff', 3, 2);")
     conn.commit()
     cursor.execute(
-       "INSERT INTO course (title, section, department, description, units, teacher) "
-       "VALUES ('Algebra', '100', 'Math', 'Functions', 3, 1);"
-    )
+        "INSERT INTO course (title, section, department, "
+        "description, units, teacher) "
+        "VALUES ('Algebra', '100', 'Math', 'Functions', 3, 1);")
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO course (title, section, department, description, units) "
-       "VALUES ('Advanced Tickling', '100', 'HR Problems', 'Creepy stuff', 5);"
-    )
+        "INSERT INTO course (title, section, department, "
+        "description, units) "
+        "VALUES ('Advanced Tickling', '100', 'HR Problems', "
+        "'Creepy stuff', 5);")
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO course (title, section, department, description, units, teacher) "
-       "VALUES ('Expensive Remote Learning Course', '100', 'Science', 'same price as an in-person class without any labs', 5, 3);"
-    )
+        "INSERT INTO course (title, section, department, "
+        "description, units, teacher) "
+        "VALUES ('Expensive Remote Learning Course', '100', 'Science', "
+        "'same price as an in-person class without any labs', 5, 3);")
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO course (title, section, department, description, units, teacher) "
-       "VALUES ('Electricity', '100', 'Science', 'electricity stuff', 5, 4);"
-    )
+        "INSERT INTO course (title, section, department, "
+        "description, units, teacher) "
+        "VALUES ('Electricity', '100', 'Science', 'electricity stuff', 5, 4);")
     conn.commit()
 
-    ## Create assignment table
-
+    # Create assignment table
 
     sql = f"DROP TABLE IF EXISTS assignment;"
     cursor.execute(sql)
@@ -194,41 +195,40 @@ def createdatabase(database_url):
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO assignment (title, description, due, points, course) "
-       "VALUES ('HW 1', 'Book exercises', '2020-01-01', 5, 1);"
+        "INSERT INTO assignment (title, description, due, points, course) "
+        "VALUES ('HW 1', 'Book exercises', '2020-01-01', 5, 1);"
     )
     conn.commit()
     cursor.execute(
-       "INSERT INTO assignment (title, description, due, points, course) "
-       "VALUES ('Test 1', 'Derivatives', '2020-01-02', 50, 1);"
+        "INSERT INTO assignment (title, description, due, points, course) "
+        "VALUES ('Test 1', 'Derivatives', '2020-01-02', 50, 1);"
     )
     conn.commit()
     cursor.execute(
-       "INSERT INTO assignment (title, description, due, points, course) "
-       "VALUES ('Exam 1', 'Slope', '2020-01-02', 50, 3);"
+        "INSERT INTO assignment (title, description, due, points, course) "
+        "VALUES ('Exam 1', 'Slope', '2020-01-02', 50, 3);"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO assignment (title, description, due, points, course) "
-       "VALUES ('Basket 1', 'basket', '2020-01-02', 100, 2);"
+        "INSERT INTO assignment (title, description, due, points, course) "
+        "VALUES ('Basket 1', 'basket', '2020-01-02', 100, 2);"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO assignment (title, description, due, points, course) "
-       "VALUES ('Foot tickle', 'ticle', '2020-01-02', 100, 4);"
+        "INSERT INTO assignment (title, description, due, points, course) "
+        "VALUES ('Foot tickle', 'ticle', '2020-01-02', 100, 4);"
     )
     conn.commit()
 
     cursor.execute(
-       "INSERT INTO assignment (title, description, due, points, course) "
-       "VALUES ('HW Exercises', 'chapter 1', '2020-01-02', 100, 6);"
+        "INSERT INTO assignment (title, description, due, points, course) "
+        "VALUES ('HW Exercises', 'chapter 1', '2020-01-02', 100, 6);"
     )
     conn.commit()
 
-    ### Create submission table
-
+    # Create submission table
 
     cursor.execute('DROP TABLE IF EXISTS submission;')
     cursor.execute('''CREATE TABLE submission(
@@ -244,22 +244,19 @@ def createdatabase(database_url):
         INSERT INTO submission (submitted, grade, assignment)
         VALUES (%s, %s, %s);
         ''',
-        (datetime_now, 55, 1))
+                   (datetime_now, 55, 1))
 
     cursor.execute('''
         INSERT INTO submission (submitted, grade, assignment)
         VALUES (%s, %s, %s);
         ''',
-        (datetime_now, 72, 1))
+                   (datetime_now, 72, 1))
 
     cursor.execute('''
         INSERT INTO submission (submitted, grade, assignment)
         VALUES (%s, %s, %s);
         ''',
-        (datetime_now, 90, 2))
-
-
-
+                   (datetime_now, 90, 2))
 
     cursor.execute('''
         INSERT into submission (submitted, grade)
@@ -271,9 +268,9 @@ def createdatabase(database_url):
         INSERT INTO submission (submitted, grade, assignment)
         VALUES (%s, %s, %s);
         ''',
-        (datetime_now, 60, 3))
+                   (datetime_now, 60, 3))
 
-    ### Create student_submission table
+    # Create student_submission table
 
     cursor.execute('DROP TABLE IF EXISTS student_submission;')
     cursor.execute('''CREATE TABLE student_submission(
@@ -289,8 +286,7 @@ def createdatabase(database_url):
         ''')
     conn.commit()
 
-    ### Create student_course table
-
+    # Create student_course table
 
     cursor.execute('DROP TABLE IF EXISTS student_course;')
     cursor.execute('''CREATE TABLE student_course(
@@ -299,7 +295,6 @@ def createdatabase(database_url):
       PRIMARY KEY (course_id, student_id)
       );''')
     conn.commit()
-
 
     cursor.execute('''
         INSERT into student_course (student_id, course_id)

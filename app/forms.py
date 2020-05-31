@@ -1,8 +1,10 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, DateTimeField, IntegerField, FloatField, SelectField, SelectMultipleField
+from wtforms import StringField, SubmitField, DateTimeField, \
+    IntegerField, FloatField
 from wtforms.validators import DataRequired, Email, NumberRange, Length
 from wtforms.fields.html5 import DateField
 import datetime
+
 
 class TeacherForm(FlaskForm):
     first_name = StringField('First name', validators=[DataRequired()])
@@ -10,6 +12,7 @@ class TeacherForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     telephone = StringField('Phone', validators=[Length(max=10)])
     submit1 = SubmitField('Submit')
+
 
 class StudentForm(FlaskForm):
     first_name = StringField('First', validators=[DataRequired()])
@@ -19,6 +22,7 @@ class StudentForm(FlaskForm):
     year = IntegerField('Year', validators=[DataRequired()])
     submit1 = SubmitField('Submit')
 
+
 class AssignmentForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     description = StringField('Description', validators=[DataRequired()])
@@ -26,6 +30,7 @@ class AssignmentForm(FlaskForm):
     points = IntegerField('Points', validators=[DataRequired()])
     course = IntegerField('Course')
     submit2 = SubmitField('Submit')
+
 
 class CourseForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
@@ -36,15 +41,18 @@ class CourseForm(FlaskForm):
     teacher = IntegerField('Teacher')
     submit1 = SubmitField('Submit')
 
+
 class SubmissionForm(FlaskForm):
     sub_time = DateTimeField(
         label='Submission date and time',
         format='%Y-%m-%d %H:%M:%S',
         validators=[DataRequired('Enter a date')]
     )
-    grade = IntegerField('Grade', validators=[DataRequired(), NumberRange(0, 100)])
+    grade = IntegerField(
+        'Grade', validators=[
+            DataRequired(), NumberRange(
+                0, 100)])
     assignment = IntegerField('Assignment')
-    # students = SelectMultipleField('Students', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
     def __init__(self, *args, **kwargs):

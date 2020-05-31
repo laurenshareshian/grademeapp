@@ -5,7 +5,7 @@
 	<div class="formscontainer">
 		<div class="form">
 		    <h3>Add New Submission</h3>
-	    	<form action="{{ url_for('addsubmission') }}" method="post" novalidate>
+	    	<form action="{{ url_for('saveAddSubmission', course_id=course_id, assignment_id=assignment_id, student_id=student_id) }}" method="post" novalidate>
 		        {{ submission_form.hidden_tag() }}
 		        <p>
 		            {{ submission_form.grade.label }}<br>
@@ -14,14 +14,6 @@
             <p>
 		            {{ submission_form.sub_time.label }}<br>
 		            {{ submission_form.sub_time(size=32) }}
-		        </p>
-		        <p>
-		            {{ submission_form.assignment.label }}<br>
-		            {{ submission_form.assignment() }}
-		        </p>
-		        <p>
-		            {{ submission_form.students.label }}<br>
-		            {{ submission_form.students(size=5) }}
 		        </p>
 		        <p>{{ submission_form.submit() }}</p>
 		    </form>

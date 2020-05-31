@@ -7,6 +7,9 @@
         <small>
             <a href="{{ url_for('editAssignment', assignment_id=submissions[0].assignment_id, course_id=submissions[0].course_id) }}">
                 {{ submissions[0].title}}
+            </a> in
+            <a href="{{ url_for('view_course', course_id=submissions[0].course_id, teacher_id=submissions[0].teacher_id) }}">
+                {{ submissions[0].course_title}}
             </a>
         </small>
     </h2>
@@ -34,6 +37,9 @@
         <small>
             <a href="{{ url_for('editAssignment', assignment_id=submissions[0].assignment_id, course_id=submissions[0].course_id) }}">
                 {{ submissions[0].title}}
+            </a> in
+            <a href="{{ url_for('view_course', course_id=submissions[0].course_id, teacher_id=submissions[0].teacher_id) }}">
+                {{ submissions[0].course_title}}
             </a>
         </small>
     </h2>

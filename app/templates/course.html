@@ -1,6 +1,5 @@
 {% extends "template.html" %}
 
-
 {% block app_content %}
 
 <div class="container">
@@ -25,7 +24,7 @@
             {% if assignments %}
               {%- for assignment in assignments %}
                 <th>
-                  <a href="{{ url_for('assignment', course_id = course.course_id, assignment_id = assignment.assignment_id) }}" >
+                  <a href="{{ url_for('assignment', course_id = course.course_id, course_title=course.title, assignment_id = assignment.assignment_id) }}" >
                     <p>{{ assignment.title }}</p>
                   </a>
                   <p>{{ assignment.due }}</p> <p>{{ assignment.points }} points</p>
@@ -44,12 +43,23 @@
               {%- for student in students %}
                 <tr>
                   <th>
-                    <a href="{{ url_for('student', student_id=student.student_id, course_id=course.course_id) }}" >
+                    <a href="{{ url_for('student', student_id=student.student_id, course_id=course.course_id, course_title=course.title) }}" >
                       {{ student.first_name + " " + student.last_name }}
                     </a>
                   </th>
                     {% for assignment in assignments%}
-                        <td> {{ grades[students.index(student)][assignments.index(assignment)] | int }}%</td>
+                        <td>
+                        {% if submissions[students.index(student)][assignments.index(assignment)] != 0 %}
+                            <a href="{{ url_for('editSubmission', submission_id=submissions[students.index(student)][assignments.index(assignment)],
+                            course_id=assignment.course, item_id=assignment.assignment_id, redirect_option="course") }}">
+                                {{ grades[students.index(student)][assignments.index(assignment)] | int }}%
+                            </a>
+                        {% else %}
+                            <a href="{{ url_for('addSubmission', course_id=course.course_id, assignment_id=assignment.assignment_id, student_id=student.student_id)}}">
+                                {{ grades[students.index(student)][assignments.index(assignment)] | int }}%
+                            </a>
+                        {% endif %}
+                        </td>
                     {% endfor %}
                     <td> </td>
                 </tr>
