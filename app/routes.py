@@ -97,10 +97,12 @@ def saveAddTeacher():
 @app.route('/<teacher_id>', methods=['GET', 'POST'])
 def renderTeachers(teacher_id=None):
     """display teacher courses"""
-    if not teacher_id:
-        teacher_id = str(session.get('user')['id'])
-    else:
-        login(teacher_id)
+    # if not teacher_id:
+    #     teacher_id = str(session.get('user')['id'])
+    # else:
+    #     login(teacher_id)
+
+    teacher_id = str(session.get('user')['id'])
 
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
