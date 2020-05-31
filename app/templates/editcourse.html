@@ -9,7 +9,7 @@
         <br>
         <div class="col-lg-4">
             <h4>Edit Course</h4>
-	    <form action="{{ url_for('saveEditCourse', course_id=course.course_id, teacher_id=course.teacher) }}" method="post" novalidate>
+	    <form action="{{ url_for('saveEditCourse', course_id=course.course_id, teacher_id=course.teacher) }}" method="post">
 	    	{{ editCourseForm.hidden_tag() }}
 	        <p>
 	            {{ editCourseForm.title.label }}<br>
@@ -34,7 +34,7 @@
 	        {{ editCourseForm.submit1(value="Update Course") }}
 	    </form>
 
-	    <form action="{{ url_for('deleteCourse', course_id=course.course_id, teacher_id=course.teacher) }}" method="post" novalidate>
+	    <form action="{{ url_for('deleteCourse', course_id=course.course_id, teacher_id=course.teacher) }}" method="post">
 	        <input type="submit" value="Delete Course" style="margin-top:2%">
 	    </form>
 
@@ -42,9 +42,6 @@
         <div class="col-lg-2 detail">
         </div>
         <div class="col-lg-4 detail">
-
-{#            <h4> Course Gradebook </h4>#}
-{#            <p> Click <a href = "{{ url_for('view_course', course_id=course.course_id) }}"> here </a> to access the course roster and gradebook.</p>#}
 
         </div>
     </div>
