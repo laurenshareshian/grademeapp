@@ -4,10 +4,15 @@
 {% block app_content %}
 
 <div class="container">
-    <h3>{{ course.title }} Gradebook </h3>
-    <a href="{{ url_for('editCourse', course_id=course['course_id']) }}">Edit course</a>
-    <p> Click on a student name to edit them or remove them from your roster (but not delete them from the school). </p>
-    <p> Click on an assignment name to edit or delete it. </p>
+    <h2>
+        Gradebook for
+        <small>
+            <a href="{{ url_for('editCourse', course_id=course['course_id']) }}">
+                {{ course.title }}
+            </a>
+        </small>
+    </h2>
+
     <form class="form-inline" method="get" action="{{ url_for('view_course', course_id=course['course_id']) }}">
       <div class="form-group">
         <input type="text" class="form-control" name="name" id="searchname" placeholder="Search students" value='{{ name }}'>
@@ -20,7 +25,7 @@
             {% if assignments %}
               {%- for assignment in assignments %}
                 <th>
-                  <a href="{{ url_for('editAssignment', title=assignment.title, due=assignment.due, points=assignment.points, description=assignment.description, assignment_id = assignment.assignment_id) }}" >
+                  <a href="{{ url_for('assignment', course_id = course.course_id, assignment_id = assignment.assignment_id) }}" >
                     <p>{{ assignment.title }}</p>
                   </a>
                   <p>{{ assignment.due }}</p> <p>{{ assignment.points }} points</p>
@@ -39,7 +44,7 @@
               {%- for student in students %}
                 <tr>
                   <th>
-                    <a href="{{ url_for('editStudent', student_id=student.student_id, course_id=course.course_id) }}" >
+                    <a href="{{ url_for('student', student_id=student.student_id, course_id=course.course_id) }}" >
                       {{ student.first_name + " " + student.last_name }}
                     </a>
                   </th>

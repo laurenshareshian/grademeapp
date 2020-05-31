@@ -151,32 +151,64 @@ def saveAddStudent(course_id):
     return redirect(url_for('gradebook', course_id=course_id))
 
 
-### Edit Student Form
-@app.route('/editstudent/<student_id>/<course_id>', methods=['GET', 'POST'])
-def editStudent(student_id, course_id):
+### Student Detail
+@app.route('/student/<student_id>/<course_id>', methods=['GET', 'POST'])
+def student(student_id, course_id):
     db_conn = db_pool.getconn()
-    cursor = db_conn.cursor()
-    cursor.execute(f"SELECT * "
-                   f"FROM student "
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f'''
+        SELECT student.student_id, student_course.course_id, assignment.title, submission.submission_id, first_name, last_name, grade, submitted, assignment
+        FROM submission
+        INNER JOIN student_submission ON student_submission.submission_id = submission.submission_id
+        INNER JOIN student ON student.student_id = student_submission.student_id
+        INNER JOIN student_course ON student.student_id = student_course.student_id 
+        INNER JOIN assignment ON submission.assignment = assignment.assignment_id
+        WHERE student.student_id = {student_id} 
+        AND student_course.course_id = {course_id};
+        ''')
+    submissions = dict_cur.fetchall()
+    if not len(submissions):
+        dict_cur.execute(f'''
+            SELECT student.student_id, student_course.course_id, first_name, last_name
+            FROM student
+            INNER JOIN student_course ON student.student_id = student_course.student_id 
+            WHERE student.student_id = {student_id} 
+            AND student_course.course_id = {course_id};
+            ''')
+        submissions = dict_cur.fetchall()
+
+
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f"SELECT student.student_id, teacher.teacher_id, teacher.first_name AS teacher_first_name, "
+                     f"teacher.last_name AS teacher_last_name, course.course_id, course.title "
+                     f"FROM student "
                    f"INNER JOIN student_course ON student_course.student_id = student.student_id "
                    f"INNER JOIN course on course.course_id = student_course.course_id "
                    f"INNER JOIN teacher on course.teacher = teacher.teacher_id "
                    f"WHERE student.student_id = {student_id}")
-    results = cursor.fetchall()
-    if len(results):
-        student = results[0]
-        student = {'student_id': student[0], 'first_name': student[1].strip(), 'last_name': student[2].strip(),
-                   'year': student[3], 'email': student[4].strip(), 'telephone': student[5]}
-        courses = [{'course_id': result[8], 'coursename': result[9].strip(), 'teacher_id': result[15],
-                    'teacher': result[16] + ' ' + result[17]} for result in results]
-        student['courses'] = courses
+    courses = dict_cur.fetchall()
+    if len(courses):
+        print(courses)
     else:
-        cursor.execute(f"SELECT * FROM student WHERE student_id={student_id};")
-        student = cursor.fetchall()[0]
-        student = {'student_id': student[0], 'first_name': student[1].strip(), 'last_name': student[2].strip(),
-                   'year': student[3], 'email': student[4].strip(), 'telephone': student[5]}
+        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur.execute(f"SELECT * FROM student WHERE student_id={student_id};")
+        courses = dict_cur.fetchall()
+        print(courses)
+    dict_cur.close()
+    db_pool.putconn(db_conn)
 
-    cursor.close()
+
+    return render_template('student.html', submissions=submissions, courses=courses)
+
+
+### Edit Student Form
+@app.route('/editstudent/<student_id>/<course_id>', methods=['GET', 'POST'])
+def editStudent(student_id, course_id):
+    db_conn = db_pool.getconn()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f'SELECT * FROM student WHERE student_id = {student_id}')
+    student = dict_cur.fetchone()
+    dict_cur.close()
     db_pool.putconn(db_conn)
 
     editStudentForm = StudentForm()
@@ -207,10 +239,8 @@ def saveEditStudent(course_id, student_id):
         db_conn.commit()
         cursor.close()
         db_pool.putconn(db_conn)
-    else:
-        print(form.telephone.errors)
 
-    return redirect(url_for('gradebook', course_id=course_id))
+    return redirect(url_for('student', student_id=student_id, course_id=course_id))
 
 
 
@@ -225,7 +255,7 @@ def deleteStudent(student_id, course_id):
     cursor.close()
     db_pool.putconn(db_conn)
 
-    return redirect(url_for('gradebook', course_id=course_id))
+    return redirect(url_for('view_course', course_id=course_id))
 
 ### Add New Assignment Form
 @app.route('/addassignment/<course>', methods=['GET', 'POST'])
@@ -278,108 +308,184 @@ def saveAddAssignment(course_id):
     db_pool.putconn(db_conn)
     return redirect(url_for('gradebook', course_id=course_id))
 
-### Edit Assignment Form
-@app.route('/editassignment/<assignment_id>', methods=['GET', 'POST'])
-def editAssignment(assignment_id):
+
+### Assignment Detail
+@app.route('/assignment/<assignment_id>/<course_id>', methods=['GET', 'POST'])
+def assignment(assignment_id, course_id):
     db_conn = db_pool.getconn()
-    cursor = db_conn.cursor()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f'''
+        SELECT student.student_id, student_course.course_id, assignment.title, 
+        submission.submission_id, first_name, last_name, grade, submitted, assignment AS assignment_id,
+        assignment.description, assignment.points, assignment.due
+        FROM submission
+        INNER JOIN student_submission ON student_submission.submission_id = submission.submission_id
+        INNER JOIN student ON student.student_id = student_submission.student_id
+        INNER JOIN student_course ON student.student_id = student_course.student_id 
+        INNER JOIN assignment ON submission.assignment = assignment.assignment_id
+        WHERE assignment.assignment_id = {assignment_id} 
+        AND student_course.course_id = {course_id};
+        ''')
+    submissions = dict_cur.fetchall()
+    if not len(submissions):
+        dict_cur.execute(f'''
+            SELECT *, course as course_id FROM assignment WHERE assignment_id = {assignment_id}
+            ''')
+        submissions = dict_cur.fetchall()
 
-    cursor.execute(f"SELECT assignment.assignment_id, assignment.title, "
-                   f"assignment.description, assignment.due, assignment.points, "
-                   f"assignment.course, "
-                   f"student.first_name, student.last_name, student.student_id, submission.grade, submission.submitted "
-                   f"FROM assignment "
-                   f"INNER JOIN submission ON assignment.assignment_id = submission.assignment "
-                   f"INNER JOIN student_submission on submission.submission_id = student_submission.submission_id "
-                   f"INNER JOIN student on student_submission.student_id = student.student_id "
-                   f"INNER JOIN course on assignment.course = course.course_id "
-                   f"WHERE assignment.assignment_id = {assignment_id}")
-    results = cursor.fetchall()
-    if len(results):
-        result = results[0]
-        assignment = {
-            'assignment_id': result[0],
-            'title': result[1].strip(),
-            'description': result[2].strip(),
-            'due': result[3],
-            'points': result[4],
-            'course': result[5]
-            }
-        submissions = [{'timestamp': result[10], 'grade': result[9], 'student_id': result[8],
-                        'studentname': result[6].strip() + ' ' + result[7].strip()} for result in results]
-        assignment['submissions'] = submissions
-    else:
-        cursor.execute(f"SELECT * FROM assignment WHERE assignment_id={assignment_id};")
-        assignment = cursor.fetchall()[0]
-        assignment = {
-            'assignment_id': assignment[0],
-            'title': assignment[1].strip(),
-            'description': assignment[2].strip(),
-            'due': assignment[3],
-            'points': assignment[4],
-            'course': assignment[5]
-        }
+    return render_template('assignment.html', submissions=submissions)
 
 
-    # set the course dropdown
-    editAssignmentForm = AssignmentForm()
-    # cursor.execute('SELECT course_id, title FROM course;')
-    # choices = [(row[0], row[1]) for row in cursor]
-    # choices.append(('', 'NULL'))
-    # editAssignmentForm.course.choices = choices
-    # cursor.execute('SELECT course FROM assignment WHERE assignment_id= %s', assignment_id)
-    # editAssignmentForm.course.default = cursor.fetchone()[0] or ''
-    # editAssignmentForm.process()
 
-    cursor.close()
+### Edit Assignment Form
+@app.route('/editassignment/<assignment_id>/<course_id>', methods=['GET', 'POST'])
+def editAssignment(assignment_id, course_id):
+    db_conn = db_pool.getconn()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f'SELECT * FROM assignment WHERE assignment_id = {assignment_id}')
+    assignment = dict_cur.fetchone()
+    dict_cur.close()
     db_pool.putconn(db_conn)
 
-    return render_template('editassignment.html', editAssignmentForm=editAssignmentForm, assignment=assignment)
+    editAssignmentForm = AssignmentForm()
+    return render_template('editassignment.html', editAssignmentForm=editAssignmentForm, assignment=assignment, course_id=course_id)
 
 ### Save Assignment Edits
 @app.route('/saveEditAssignment/<course_id>/<assignment_id>', methods=['POST'])
 def saveEditAssignment(course_id, assignment_id):
-
     form = AssignmentForm(request.form)
     assignment = {}
     if request.method == 'POST' and form.validate():
-        assignment['title'] = request.form['title']
-        assignment['due'] = request.form['due']
-        assignment['points'] = request.form['points']
-        assignment['description'] = request.form['description']
-
+        assignment["title"] = request.form['title']
+        assignment["description"] = request.form['description']
+        assignment["points"] = request.form['due']
+        assignment["due"] = request.form['points']
         db_conn = db_pool.getconn()
         cursor = db_conn.cursor()
-
-        cursor.execute(f'''UPDATE assignment
-                            SET title = %s,
-                            description = %s,
-                            due = %s,
-                            points = %s,
-                            course = %s
-                            WHERE assignment_id = %s''',
-                       (assignment['title'], assignment['description'],
-                        assignment['due'], assignment['points'],
-                        course_id, assignment_id))
+        cursor.execute(f"UPDATE assignment SET title = %s, description = %s, points = %s, due = %s "
+                       f"WHERE assignment_id = %s;",
+                    (assignment['title'],
+                     assignment['description'],
+                     assignment['due'],
+                     assignment['points'],
+                     assignment_id))
 
         db_conn.commit()
         cursor.close()
         db_pool.putconn(db_conn)
 
-    return redirect(url_for('gradebook', course_id=course_id))
+    return redirect(url_for('assignment', assignment_id=assignment_id, course_id=course_id))
+
 
 
 ### Delete Assignment
-@app.route('/deleteAssigment/<assignment_id>/<course_id>', methods=['POST'])
+@app.route('/deleteAssignment/<assignment_id>/<course_id>', methods=['POST'])
 def deleteAssignment(assignment_id, course_id):
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
-    sql = f'''DELETE FROM assignment WHERE assignment_id = {assignment_id};'''
+    sql = f'''DELETE FROM assignment WHERE assignment_id={assignment_id};'''
     cursor.execute(sql)
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('gradebook', course_id=course_id))
+
+    return redirect(url_for('view_course', course_id=course_id))
+
+
+
+# ### Edit Assignment Form
+# @app.route('/editassignment/<assignment_id>/<course_id>', methods=['GET', 'POST'])
+# def editAssignment(assignment_id, course_id):
+#     db_conn = db_pool.getconn()
+#     cursor = db_conn.cursor()
+#
+#     cursor.execute(f"SELECT assignment.assignment_id, assignment.title, "
+#                    f"assignment.description, assignment.due, assignment.points, "
+#                    f"assignment.course, "
+#                    f"student.first_name, student.last_name, student.student_id, submission.grade, submission.submitted "
+#                    f"FROM assignment "
+#                    f"INNER JOIN submission ON assignment.assignment_id = submission.assignment "
+#                    f"INNER JOIN student_submission on submission.submission_id = student_submission.submission_id "
+#                    f"INNER JOIN student on student_submission.student_id = student.student_id "
+#                    f"INNER JOIN course on assignment.course = course.course_id "
+#                    f"WHERE assignment.assignment_id = {assignment_id}")
+#     results = cursor.fetchall()
+#     if len(results):
+#         result = results[0]
+#         assignment = {
+#             'assignment_id': result[0],
+#             'title': result[1].strip(),
+#             'description': result[2].strip(),
+#             'due': result[3],
+#             'points': result[4],
+#             'course': result[5]
+#             }
+#         submissions = [{'timestamp': result[10], 'grade': result[9], 'student_id': result[8],
+#                         'studentname': result[6].strip() + ' ' + result[7].strip()} for result in results]
+#         assignment['submissions'] = submissions
+#     else:
+#         cursor.execute(f"SELECT * FROM assignment WHERE assignment_id={assignment_id};")
+#         assignment = cursor.fetchall()[0]
+#         assignment = {
+#             'assignment_id': assignment[0],
+#             'title': assignment[1].strip(),
+#             'description': assignment[2].strip(),
+#             'due': assignment[3],
+#             'points': assignment[4],
+#             'course': assignment[5]
+#         }
+#
+#     editAssignmentForm = AssignmentForm()
+#
+#     cursor.close()
+#     db_pool.putconn(db_conn)
+#
+#     return render_template('editassignment.html', editAssignmentForm=editAssignmentForm, assignment=assignment)
+#
+# ### Save Assignment Edits
+# @app.route('/saveEditAssignment/<course_id>/<assignment_id>', methods=['POST'])
+# def saveEditAssignment(course_id, assignment_id):
+#
+#     form = AssignmentForm(request.form)
+#     assignment = {}
+#     if request.method == 'POST' and form.validate():
+#         assignment['title'] = request.form['title']
+#         assignment['due'] = request.form['due']
+#         assignment['points'] = request.form['points']
+#         assignment['description'] = request.form['description']
+#
+#         db_conn = db_pool.getconn()
+#         cursor = db_conn.cursor()
+#
+#         cursor.execute(f'''UPDATE assignment
+#                             SET title = %s,
+#                             description = %s,
+#                             due = %s,
+#                             points = %s,
+#                             course = %s
+#                             WHERE assignment_id = %s''',
+#                        (assignment['title'], assignment['description'],
+#                         assignment['due'], assignment['points'],
+#                         course_id, assignment_id))
+#
+#         db_conn.commit()
+#         cursor.close()
+#         db_pool.putconn(db_conn)
+#
+#     return redirect(url_for('gradebook', course_id=course_id))
+#
+#
+# ### Delete Assignment
+# @app.route('/deleteAssigment/<assignment_id>/<course_id>', methods=['POST'])
+# def deleteAssignment(assignment_id, course_id):
+#     db_conn = db_pool.getconn()
+#     cursor = db_conn.cursor()
+#     sql = f'''DELETE FROM assignment WHERE assignment_id = {assignment_id};'''
+#     cursor.execute(sql)
+#     db_conn.commit()
+#     cursor.close()
+#     db_pool.putconn(db_conn)
+#     return redirect(url_for('gradebook', course_id=course_id))
 
 @app.route('/course/<course_id>', methods=['GET'])
 def view_course(course_id):
@@ -635,13 +741,15 @@ def addTeacher():
     return render_template('addteacher.html', addTeacherForm=addTeacherForm)
 
 @app.route('/', methods=['GET', 'POST'])
-@app.route('/<department>', methods=['GET', 'POST'])
-def renderTeachers(department='All'):
+@app.route('/<teacher_id>', methods=['GET', 'POST'])
+def renderTeachers(teacher_id=None):
+    if not teacher_id:
+        teacher_id = str(session.get('user')['id'])
+    else:
+        login(teacher_id)
+
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
-
-    teacher_id = str(session.get('user')['id'])
-
     dict_cur.execute('''
         SELECT c.course_id, title, COUNT(student_id) as student_count FROM course c
         LEFT JOIN student_course sc on c.course_id = sc.course_id
@@ -810,6 +918,59 @@ def addsubmission():
         cursor.close()
         db_pool.putconn(db_conn)
         return redirect(url_for('viewsubmissions'))
+
+
+### Edit Submission
+@app.route('/editsubmission/<submission_id>/<course_id>/<item_id>/<redirect_option>', methods=['GET', 'POST'])
+def editSubmission(submission_id, course_id, item_id, redirect_option):
+    db_conn = db_pool.getconn()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f'''SELECT * FROM submission WHERE submission_id = {submission_id}''')
+    submission = dict_cur.fetchone()
+    dict_cur.close()
+    db_pool.putconn(db_conn)
+
+    editSubmissionForm = SubmissionForm()
+    return render_template('editsubmission.html', editSubmissionForm=editSubmissionForm, submission=submission,
+                           course_id=course_id, item_id = item_id, redirect_option=redirect_option)
+
+### Save Submission Edits
+@app.route('/saveEditSubmission/<submission_id>/<course_id>/<item_id>/<redirect_option>', methods=['POST'])
+def saveEditSubmission(submission_id, course_id, item_id, redirect_option):
+
+    form = SubmissionForm(request.form)
+    submission = {}
+    if request.method == 'POST' and form.validate():
+        print(form)
+        submission['submitted'] = request.form['sub_time']
+        submission['grade'] = request.form['grade']
+        db_conn = db_pool.getconn()
+        cursor = db_conn.cursor()
+        cursor.execute(f"UPDATE submission SET grade = %s, submitted = %s WHERE submission_id = %s; ",
+                       (submission['grade'], submission['submitted'], submission_id))
+        db_conn.commit()
+        cursor.close()
+        db_pool.putconn(db_conn)
+
+    if redirect_option=="student":
+        return redirect(url_for('student', student_id=item_id, course_id=course_id))
+    else:
+        return redirect(url_for('assignment', assignment_id=item_id, course_id=course_id))
+
+### Delete Submission
+@app.route('/deleteSubmission/<submission_id>/<item_id>/<course_id>/<redirect_option>', methods=['POST'])
+def deleteSubmission(submission_id, item_id, course_id, redirect_option):
+    db_conn = db_pool.getconn()
+    cursor = db_conn.cursor()
+    sql = f'''DELETE FROM submission WHERE submission_id = {submission_id};'''
+    cursor.execute(sql)
+    db_conn.commit()
+    cursor.close()
+    db_pool.putconn(db_conn)
+    if redirect_option=="student":
+        return redirect(url_for('student', student_id=item_id, course_id=course_id))
+    else:
+        return redirect(url_for('assignment', assignment_id=item_id, course_id=course_id))
 
 
 ### Login route

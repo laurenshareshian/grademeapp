@@ -5,34 +5,25 @@
 
 <div class="container">
     <div class="form" class="col-sm-12">
-        <h3>{{assignment.title }} </h3>
+        <h3>Submission {{submission.submission_id }} </h3>
         <br>
         <div class="col-lg-4">
-            <h4>Edit Assignment</h4>
-	    <form action="{{ url_for('saveEditAssignment', assignment_id=assignment.assignment_id, course_id=assignment.course) }}" method="post">
-	    	{{ editAssignmentForm.hidden_tag() }}
+            <h4>Edit Submission</h4>
+	    <form action="{{ url_for('saveEditSubmission', submission_id=submission.submission_id, item_id=item_id, course_id=course_id, redirect_option=redirect_option) }}" method="post">
+	    	{{ editSubmissionForm.hidden_tag() }}
 	        <p>
-	            {{ editAssignmentForm.title.label }}<br>
-	            {{ editAssignmentForm.title(value=assignment.title.strip(), size=32) }}
-	        </p>
-	        <p>
-	            {{ editAssignmentForm.due.label }}<br>
-	            {{ editAssignmentForm.due(value=assignment.due, size=32) }}
+	            {{ editSubmissionForm.grade.label }}<br>
+	            {{ editSubmissionForm.grade(value=submission.grade, size=32) }}
 	        </p>
 	        <p>
-	            {{ editAssignmentForm.points.label }}<br>
-	            {{ editAssignmentForm.points(value=assignment.points, size=32) }}
+	            {{ editSubmissionForm.sub_time.label }}<br>
+	            {{ editSubmissionForm.sub_time(value=submission.submitted, size=32) }}
 	        </p>
-          <p>
-	            {{ editAssignmentForm.description.label }}<br>
-	            {{ editAssignmentForm.description(value=assignment.description.strip(), size=32) }}
-	        </p>
-
-	        {{ editAssignmentForm.submit2(value="Update Assignment") }}
+	        {{ editSubmissionForm.submit(value="Update Submission") }}
 	    </form>
 
-	    <form action="{{ url_for('deleteAssignment', assignment_id=assignment.assignment_id, course_id = assignment.course) }}" method="post" novalidate>
-	        <input type="submit" value="Delete Assignment" style="margin-top:2%">
+	    <form action="{{ url_for('deleteSubmission', submission_id=submission.submission_id, item_id=item_id, course_id=course_id, redirect_option=redirect_option) }}" method="post">
+	        <input type="submit" value="Delete Submission" style="margin-top:2%">
 	    </form>
         </div>
         <div class="col-lg-2 detail">

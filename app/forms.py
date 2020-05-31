@@ -43,8 +43,8 @@ class SubmissionForm(FlaskForm):
         validators=[DataRequired('Enter a date')]
     )
     grade = IntegerField('Grade', validators=[DataRequired(), NumberRange(0, 100)])
-    assignment = SelectField('Assignment')
-    students = SelectMultipleField('Students', validators=[DataRequired()])
+    assignment = IntegerField('Assignment')
+    # students = SelectMultipleField('Students', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
     def __init__(self, *args, **kwargs):
