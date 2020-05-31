@@ -5,28 +5,32 @@
 	<div class="formscontainer">
 		<div class="form">
 		    <h3>Add New Submission</h3>
-	    	<form action="{{ url_for('saveAddSubmission', course_id=course_id, assignment_id=assignment_id, student_id=student_id) }}" method="post" novalidate>
-		        {{ submission_form.hidden_tag() }}
-		        <p>
-		            {{ submission_form.grade.label }}<br>
-		            {{ submission_form.grade(size=32, placeholder='0-100') }}
-		        </p>
-                <p>
-		            {{ submission_form.sub_time.label }}<br>
-		            {{ submission_form.sub_time(size=32) }}
-		        </p>
-                {% if not student_id%}
+            {% if submission_form.students | length != 0 %}
+                <form action="{{ url_for('saveAddSubmission', course_id=course_id, assignment_id=assignment_id, student_id=student_id) }}" method="post" novalidate>
+                    {{ submission_form.hidden_tag() }}
                     <p>
-                        <b>Students Who Have Not Submitted</b><br>
-                        <select name=students method="GET" action="/">
-                            {% for student in submission_form.students %}
-                            <option value= "{{student[0]}}">{{ student[1]}} {{ student[2] }}</option>"
-                            {% endfor %}
-                        </select>
+                        {{ submission_form.grade.label }}<br>
+                        {{ submission_form.grade(size=32, placeholder='0-100') }}
                     </p>
-                {% endif %}
-                <p>{{ submission_form.submit() }}</p>
-		    </form>
+                    <p>
+                        {{ submission_form.sub_time.label }}<br>
+                        {{ submission_form.sub_time(size=32) }}
+                    </p>
+                    {% if not student_id%}
+                        <p>
+                            <b>Students Who Have Not Submitted</b><br>
+                            <select name=students method="GET" action="/">
+                                {% for student in submission_form.students %}
+                                <option value= "{{student[0]}}">{{ student[1]}} {{ student[2] }}</option>"
+                                {% endfor %}
+                            </select>
+                        </p>
+                    {% endif %}
+                    <p>{{ submission_form.submit() }}</p>
+                </form>
+            {% else %}
+                All students have submitted. You may <a href="{{ url_for('assignment', course_id=course_id, assignment_id=assignment_id) }}" > edit submissions </a> instead.
+            {% endif %}
 		</div>
 	</div>
 </div>
