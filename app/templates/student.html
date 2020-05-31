@@ -33,7 +33,6 @@
                 </tr>
                 {% endif %}
             {% endfor %}
-
         </tbody>
     </table><!-- table table-striped -->
 
@@ -43,9 +42,6 @@
         <small>
             <a href="{{ url_for('editStudent', student_id=submissions[0].student_id, course_id=submissions[0].course_id) }}">
                 {{ submissions[0].first_name }} {{ submissions[0].last_name }}
-            </a> in
-            <a href="{{ url_for('view_course', course_id=courses[0].course_id, teacher_id=courses[0].teacher_id) }}">
-                {{ courses[0].title }}
             </a>
         </small>
     </h2>

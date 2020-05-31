@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, DateTimeField, \
-    IntegerField, FloatField
+    IntegerField, FloatField, SelectField, SelectMultipleField
 from wtforms.validators import DataRequired, Email, NumberRange, Length
 from wtforms.fields.html5 import DateField
 import datetime
@@ -52,6 +52,7 @@ class SubmissionForm(FlaskForm):
         'Grade', validators=[
             DataRequired(), NumberRange(
                 0, 100)])
+    students = SelectMultipleField('Students')
     assignment = IntegerField('Assignment')
     submit = SubmitField('Submit')
 

@@ -11,11 +11,21 @@
 		            {{ submission_form.grade.label }}<br>
 		            {{ submission_form.grade(size=32, placeholder='0-100') }}
 		        </p>
-            <p>
+                <p>
 		            {{ submission_form.sub_time.label }}<br>
 		            {{ submission_form.sub_time(size=32) }}
 		        </p>
-		        <p>{{ submission_form.submit() }}</p>
+                {% if not student_id%}
+                    <p>
+                        <b>Students Who Have Not Submitted</b><br>
+                        <select name=students method="GET" action="/">
+                            {% for student in submission_form.students %}
+                            <option value= "{{student[0]}}">{{ student[1]}} {{ student[2] }}</option>"
+                            {% endfor %}
+                        </select>
+                    </p>
+                {% endif %}
+                <p>{{ submission_form.submit() }}</p>
 		    </form>
 		</div>
 	</div>

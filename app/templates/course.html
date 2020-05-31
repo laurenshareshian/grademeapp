@@ -24,7 +24,7 @@
             {% if assignments %}
               {%- for assignment in assignments %}
                 <th>
-                  <a href="{{ url_for('assignment', course_id = course.course_id, course_title=course.title, assignment_id = assignment.assignment_id) }}" >
+                  <a href="{{ url_for('assignment', course_id = course.course_id, assignment_id = assignment.assignment_id) }}" >
                     <p>{{ assignment.title }}</p>
                   </a>
                   <p>{{ assignment.due }}</p> <p>{{ assignment.points }} points</p>
@@ -43,7 +43,7 @@
               {%- for student in students %}
                 <tr>
                   <th>
-                    <a href="{{ url_for('student', student_id=student.student_id, course_id=course.course_id, course_title=course.title) }}" >
+                    <a href="{{ url_for('student', student_id=student.student_id, course_id=course.course_id) }}" >
                       {{ student.first_name + " " + student.last_name }}
                     </a>
                   </th>

@@ -97,6 +97,9 @@ def saveAddTeacher():
 @app.route('/<teacher_id>', methods=['GET', 'POST'])
 def renderTeachers(teacher_id=None):
     """display teacher courses"""
+
+    # trying to get teacher info to update after teacher edit
+    # but heroku says too many connections
     # if not teacher_id:
     #     teacher_id = str(session.get('user')['id'])
     # else:
@@ -778,19 +781,65 @@ def viewsubmissions():
 
 
 @app.route(
+    '/addsubmission/<course_id>/<student_id>',
+    methods=['GET', 'POST'])
+@app.route(
+    '/addsubmission/<course_id>/<assignment_id>',
+    methods=['GET', 'POST'])
+@app.route(
     '/addsubmission/<course_id>/<assignment_id>/<student_id>',
-    methods=[
-        'GET',
-        'POST'])
-def addSubmission(course_id, assignment_id, student_id):
+    methods=['GET', 'POST'])
+def addSubmission(course_id, assignment_id=None, student_id=None):
     """display add assignment form"""
-    db_conn = db_pool.getconn()
-    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
-
     addSubmissionForm = SubmissionForm()
 
-    dict_cur.close()
-    db_pool.putconn(db_conn)
+    # if you are adding a submission but you need a list of students who
+    # haven't submitted
+    db_conn = db_pool.getconn()
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    if not student_id:
+        # set the students dropdown
+        # get all students
+        dict_cur.execute(
+            f'SELECT student.student_id, student.first_name, '
+            f'student.last_name '
+            f'FROM student '
+            f'INNER JOIN student_course '
+            f'ON student.student_id = student_course.student_id '
+            f'WHERE student_course.course_id = {course_id};')
+        choices = [(row['student_id'], row['first_name'], row['last_name'])
+                   for row in dict_cur]
+
+        # get students who have already submitted because we want to omit them
+        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur.execute(f'''
+            SELECT student.student_id, student.first_name, student.last_name,
+            student_course.course_id
+            FROM submission
+            INNER JOIN student_submission
+            ON student_submission.submission_id = submission.submission_id
+            INNER JOIN student
+            ON student.student_id = student_submission.student_id
+            INNER JOIN student_course
+            ON student.student_id = student_course.student_id
+            INNER JOIN course
+            ON student_course.course_id = course.course_id
+            INNER JOIN assignment
+            ON submission.assignment = assignment.assignment_id
+            WHERE assignment.assignment_id = {assignment_id}
+            AND student_course.course_id = {course_id};
+            ''')
+        students_already_submitted = [
+            (row['student_id'],
+             row['first_name'],
+                row['last_name']) for row in dict_cur]
+
+        # omit students who have already submitted
+        addSubmissionForm.students = list(
+            set(choices) - set(students_already_submitted))
+
+        dict_cur.close()
+        db_pool.putconn(db_conn)
 
     return render_template(
         'addsubmission.html',
@@ -801,12 +850,19 @@ def addSubmission(course_id, assignment_id, student_id):
 
 
 @app.route(
+    '/saveAddSubmission/<course_id>/<assignment_id>',
+    methods=['POST'])
+@app.route(
     '/saveAddSubmission/<course_id>/<assignment_id>/<student_id>',
     methods=['POST'])
-def saveAddSubmission(course_id, assignment_id, student_id):
+def saveAddSubmission(course_id, assignment_id, student_id=None):
     """process add student form"""
+    original_student_id = student_id
     grade = request.form['grade']
     sub_date = request.form['sub_time']
+    if not student_id:
+        student_id = request.form['students']
+        print(student)
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
@@ -831,7 +887,14 @@ def saveAddSubmission(course_id, assignment_id, student_id):
     cursor.close()
     db_pool.putconn(db_conn)
 
-    return redirect(url_for('view_course', course_id=course_id))
+    if original_student_id:
+        return redirect(url_for('view_course', course_id=course_id))
+    else:
+        return redirect(
+            url_for(
+                'assignment',
+                course_id=course_id,
+                assignment_id=assignment_id))
 
 
 @app.route(
