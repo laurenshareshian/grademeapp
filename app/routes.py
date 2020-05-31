@@ -607,8 +607,7 @@ def view_course(course_id):
     """display course details and roster"""
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
-    dict_cur.execute(f"SELECT * FROM course "
-                     f"WHERE course_id = %s", course_id)
+    dict_cur.execute("SELECT * FROM course WHERE course_id = %s", (course_id,))
     course = dict_cur.fetchone()
 
     # perform search by first or last name or both
@@ -648,7 +647,7 @@ def view_course(course_id):
             INNER JOIN student_course
             ON student_course.student_id = student.student_id
             WHERE student_course.course_id = %s
-            ''', course_id)
+            ''', (course_id,))
         students = dict_cur.fetchall()
 
     dict_cur.execute(f"SELECT * FROM assignment "
