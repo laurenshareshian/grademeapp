@@ -27,10 +27,19 @@
                 </td>
                 <td>{{ c.student_count }}</td>
                 <td>
-                    <a href="{{ url_for('editCourse', course_id=c.course_id) }}">Edit</a>
+                    <a href="{{ url_for('editCourse', course_id=c.course_id) }}">Edit/Delete</a>
                 </td>
             </tr>
             {% endfor %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('addCourse', teacher_id=session['user']['id']) }}" >
+                        Add New Course
+                    </a>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
         </tbody>
     </table><!-- table table-striped -->
 </div>

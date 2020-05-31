@@ -26,7 +26,7 @@
                     <td><a href="{{ url_for('assignment', assignment_id=sub.assignment, course_id=sub.course_id) }}">{{ sub.title }}</a></td>
                     <td>{{ sub.grade }}</td>
                     <td>{{ sub.submitted }}</td>
-                    <td> <a href="{{ url_for('editSubmission', submission_id=sub.submission_id, course_id=sub.course_id, item_id=sub.student_id, redirect_option="student") }}">Edit</a></td>
+                    <td> <a href="{{ url_for('editSubmission', submission_id=sub.submission_id, course_id=sub.course_id, item_id=sub.student_id, redirect_option="student") }}">Edit/Delete</a></td>
                 </tr>
                 {% endif %}
             {% endfor %}

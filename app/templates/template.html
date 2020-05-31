@@ -32,6 +32,11 @@
                             {% for t in session['teachers'] %}
                                 <li><a href="{{ url_for('login', id=t['id']) }}">{{ t['name'] }}</a></li>
                             {% endfor %}
+                                <li>
+                                    <a href="{{ url_for('addTeacher') }}" >
+                                        Add New Teacher
+                                    </a>
+                                </li>
                         </ul>
                     </li>
                 </ul>

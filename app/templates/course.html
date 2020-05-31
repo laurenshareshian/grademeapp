@@ -7,13 +7,13 @@
     <h2>
         Gradebook for
         <small>
-            <a href="{{ url_for('editCourse', course_id=course['course_id']) }}">
+            <a href="{{ url_for('editCourse', course_id=course.course_id) }}">
                 {{ course.title }}
             </a>
         </small>
     </h2>
 
-    <form class="form-inline" method="get" action="{{ url_for('view_course', course_id=course['course_id']) }}">
+    <form class="form-inline" method="get" action="{{ url_for('view_course', course_id=course.course_id) }}">
       <div class="form-group">
         <input type="text" class="form-control" name="name" id="searchname" placeholder="Search students" value='{{ name }}'>
       </div>

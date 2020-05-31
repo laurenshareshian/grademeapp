@@ -54,7 +54,7 @@
                     <td>{{ sub.grade }}</td>
                     <td>{{ sub.submitted }}</td>
                     <td> <a href="{{ url_for('editSubmission', submission_id=sub.submission_id,
-                    course_id=sub.course_id, item_id=sub.assignment_id, redirect_option="assignment") }}">Edit</a></td>
+                    course_id=sub.course_id, item_id=sub.assignment_id, redirect_option="assignment") }}">Edit/Delete</a></td>
                 </tr>
                 {% endif %}
             {% endfor %}

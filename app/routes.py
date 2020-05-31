@@ -42,67 +42,6 @@ def before_request():
     get_teachers()
 
 
-@app.route('/gradebook/<course_id>')
-def gradebook(course_id):
-    """show student/assignment grades for a give course"""
-    db_conn = db_pool.getconn()
-    cursor = db_conn.cursor()
-    cursor.execute(f"SELECT * FROM course WHERE course_id = {course_id};")
-    course = cursor.fetchall()[0]
-    course = {
-        'course_id': course[0],
-        'title': course[1].strip(),
-        'section': course[2],
-        'department': course[3],
-        'description': course[4],
-        'units': course[5],
-        'teacher': course[6]
-    }
-
-    cursor.execute(f"SELECT * "
-                   f"FROM student "
-                   f"INNER JOIN student_course ON student_course.student_id = student.student_id "
-                   f"WHERE student_course.course_id = {course['course_id']}")
-
-    studentlist = cursor.fetchall()
-    students = []
-    for student in studentlist:
-        students.append({'student_id': student[0], 'first_name': student[1].strip(),
-                         'last_name': student[2].strip(), 'year': student[3],
-                         'email': student[4].strip(), 'telephone': student[5] })
-
-    cursor.execute(f"SELECT * FROM assignment WHERE course = {course['course_id']};")
-    assignmentlist = cursor.fetchall()
-    assignments = []
-    for assignment in assignmentlist:
-        assignments.append({'assignment_id': assignment[0], 'title': assignment[1].strip(),
-                            'description': assignment[2].strip(), 'due': assignment[3], 'points': assignment[4] })
-
-    grades = np.zeros((max(len(students), 1), max(len(assignments), 1)))
-    for i, assignment in enumerate(assignments):
-        for j, student in enumerate(students):
-            cursor.execute(f"SELECT student.student_id, assignment.assignment_id, submission.grade "
-                           f"FROM student "
-                           f"LEFT OUTER JOIN student_submission ON student.student_id = student_submission.student_id "
-                           f"LEFT OUTER JOIN submission ON student_submission.submission_id = submission.submission_id "
-                           f"LEFT OUTER JOIN assignment ON submission.assignment = assignment.assignment_id "
-                           f"WHERE student.student_id = {student['student_id']} "
-                           f"AND assignment.assignment_id = {assignment['assignment_id']};")
-            results = cursor.fetchall()
-            if len(results):
-                grades[j, i] = results[0][2]
-            else:
-                grades[j, i] = None
-
-    cursor.close()
-    db_pool.putconn(db_conn)
-
-    addStudentForm = StudentForm()
-    addAssignmentForm = AssignmentForm()
-    return render_template('gradebook.html', addStudentForm=addStudentForm,
-                           addAssignmentForm=addAssignmentForm, course=course,
-                           students=students, assignments=assignments, grades=grades)
-
 ####################################
 # TEACHER STUFF
 ##################################
@@ -127,16 +66,18 @@ def saveAddTeacher():
     cursor = db_conn.cursor()
     sql = f'''INSERT INTO teacher
     (first_name, last_name, email, telephone)
-    VALUES (%s, %s, %s, %s);'''
+    VALUES (%s, %s, %s, %s) RETURNING teacher_id AS last_id;'''
     cursor.execute(sql,
                 (newteacher['first_name'],
                  newteacher["last_name"],
                  newteacher["email"],
                  newteacher["telephone"]))
     db_conn.commit()
+    teacher_id = cursor.fetchall()[0][0]
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('renderTeachers'))
+
+    return redirect(url_for('renderTeachers', teacher_id=teacher_id))
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -175,6 +116,7 @@ def editTeacher(teacher_id):
     teacher = dict_cur.fetchone()
     dict_cur.close()
     db_pool.putconn(db_conn)
+
     editTeacherForm = TeacherForm()
     return render_template('editteacher.html', editTeacherForm=editTeacherForm, teacher=teacher)
 
@@ -226,7 +168,6 @@ def deleteTeacher(teacher_id):
     cursor.close()
     db_pool.putconn(db_conn)
 
-
     return redirect(url_for('renderTeachers'))
 
 
@@ -270,8 +211,8 @@ def saveAddStudent(course_id):
     cursor.execute(sql, (student_id, course_id))
     db_conn.commit()
     cursor.close()
-
     db_pool.putconn(db_conn)
+
     return redirect(url_for('view_course', course_id=course_id))
 
 @app.route('/student/<student_id>/<course_id>', methods=['GET', 'POST'])
@@ -316,6 +257,7 @@ def student(student_id, course_id):
         dict_cur.execute(f"SELECT * FROM student WHERE student_id={student_id};")
         courses = dict_cur.fetchall()
         print(courses)
+
     dict_cur.close()
     db_pool.putconn(db_conn)
 
@@ -428,6 +370,7 @@ def saveAddAssignment(course_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
+
     return redirect(url_for('view_course', course_id=course_id))
 
 
@@ -454,6 +397,9 @@ def assignment(assignment_id, course_id):
             SELECT *, course as course_id FROM assignment WHERE assignment_id = {assignment_id}
             ''')
         submissions = dict_cur.fetchall()
+
+    dict_cur.close()
+    db_pool.putconn(db_conn)
 
     return render_template('assignment.html', submissions=submissions)
 
@@ -518,18 +464,7 @@ def deleteAssignment(assignment_id, course_id):
 @app.route('/addcourse/<teacher_id>', methods=['GET', 'POST'])
 def addCourse(teacher_id):
     """display add course form"""
-    db_conn = db_pool.getconn()
-    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
-
     addCourseForm = CourseForm()
-    dict_cur.execute('SELECT teacher_id, first_name, last_name FROM teacher')
-    choices = [(row['teacher_id'], '{} {}'.format(row['first_name'], row['last_name'])) for row in dict_cur]
-    choices.append(('', 'NULL'))
-    addCourseForm.teacher.choices = choices
-
-    dict_cur.close()
-    db_pool.putconn(db_conn)
-
     return render_template('addcourse.html', addCourseForm=addCourseForm, teacher_id=teacher_id)
 
 
@@ -568,89 +503,72 @@ def saveAddCourse(teacher_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
-    return redirect(url_for('editTeacher', teacher_id=teacher))
+
+    return redirect(url_for('renderTeachers', teacher_id=teacher))
 
 
 @app.route('/course/<course_id>', methods=['GET'])
 def view_course(course_id):
     """display course details and roster"""
     db_conn = db_pool.getconn()
-    cursor = db_conn.cursor()
-    cursor.execute(f"SELECT * FROM course WHERE course_id = %s", course_id)
-    course = cursor.fetchone()
-    course = {
-        'course_id': str(course[0]),
-        'title': course[1].strip(),
-        'section': course[2],
-        'department': course[3],
-        'description': course[4],
-        'units': course[5],
-        'teacher': course[6]
-    }
+    dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+    dict_cur.execute(f"SELECT * FROM course WHERE course_id = %s", course_id)
+    course = dict_cur.fetchone()
 
     # perform search by first or last name or both
     name_q = request.args.get('name') or ''
     if name_q:
         # search for first OR last name
         name = '{}%'.format(name_q.lower())
-        cursor.execute('''
+        dict_cur.execute('''
             SELECT *
             FROM student
             INNER JOIN student_course ON student_course.student_id = student.student_id
             WHERE student_course.course_id = %s
             AND (LOWER(student.first_name) LIKE %s OR LOWER(student.last_name) LIKE %s)
-            ''', (course['course_id'], name, name))
-        studentlist = cursor.fetchall()
+            ''', (course_id, name, name))
+        students = dict_cur.fetchall()
         # search for first AND last name
-        if not len(studentlist):
+        if not len(students):
             first_name, last_name = name_q.split(' ')[0].lower(), name_q.split(' ')[1].lower()
-            cursor.execute('''
+            dict_cur.execute('''
                 SELECT *
                 FROM student
                 INNER JOIN student_course ON student_course.student_id = student.student_id
                 WHERE student_course.course_id = %s
                 AND (LOWER(student.first_name) LIKE %s AND LOWER(student.last_name) LIKE %s)
-                ''', (course['course_id'], first_name, last_name))
-            studentlist = cursor.fetchall()
+                ''', (course_id, first_name, last_name))
+            students = dict_cur.fetchall()
 
     else:
-        cursor.execute('''
+        dict_cur.execute('''
             SELECT *
             FROM student
             INNER JOIN student_course ON student_course.student_id = student.student_id
             WHERE student_course.course_id = %s
-            ''', course['course_id'])
-        studentlist = cursor.fetchall()
-    students = []
-    for student in studentlist:
-        students.append({'student_id': student[0], 'first_name': student[1].strip(),
-                         'last_name': student[2].strip(), 'year': student[3],
-                         'email': student[4].strip(), 'telephone': student[5] })
+            ''', course_id)
+        students = dict_cur.fetchall()
 
-    cursor.execute(f"SELECT * FROM assignment WHERE course = {course['course_id']};")
-    assignmentlist = cursor.fetchall()
-    assignments = []
-    for assignment in assignmentlist:
-        assignments.append({'assignment_id': assignment[0], 'title': assignment[1].strip(),
-                            'description': assignment[2].strip(), 'due': assignment[3], 'points': assignment[4] })
+    dict_cur.execute(f"SELECT * FROM assignment WHERE course = {course_id};")
+    assignments = dict_cur.fetchall()
 
     grades = np.zeros((max(len(students), 1), max(len(assignments), 1)))
     for i, assignment in enumerate(assignments):
         for j, student in enumerate(students):
-            cursor.execute(f"SELECT student.student_id, assignment.assignment_id, submission.grade "
+            dict_cur.execute(f"SELECT student.student_id, assignment.assignment_id, submission.grade "
                            f"FROM student "
                            f"LEFT OUTER JOIN student_submission ON student.student_id = student_submission.student_id "
                            f"LEFT OUTER JOIN submission ON student_submission.submission_id = submission.submission_id "
                            f"LEFT OUTER JOIN assignment ON submission.assignment = assignment.assignment_id "
                            f"WHERE student.student_id = {student['student_id']} "
                            f"AND assignment.assignment_id = {assignment['assignment_id']};")
-            results = cursor.fetchall()
+            results = dict_cur.fetchall()
             if len(results):
                 grades[j, i] = results[0][2]
             else:
                 grades[j, i] = None
 
-    cursor.close()
+    dict_cur.close()
     db_pool.putconn(db_conn)
 
     return render_template('course.html', course=course, students=students, assignments=assignments, grades=grades, name=name_q)
@@ -666,6 +584,7 @@ def editCourse(course_id):
     dict_cur.close()
     db_pool.putconn(db_conn)
     editCourseForm = CourseForm()
+
     return render_template('editcourse.html', editCourseForm=editCourseForm, course=course)
 
 
@@ -708,6 +627,7 @@ def deleteCourse(course_id, teacher_id):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
+
     return redirect(url_for('renderTeachers', teacher_id=teacher_id))
 
 
@@ -824,6 +744,7 @@ def deleteSubmission(submission_id, item_id, course_id, redirect_option):
     db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
+
     if redirect_option=="student":
         return redirect(url_for('student', student_id=item_id, course_id=course_id))
     else:
