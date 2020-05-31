@@ -36,11 +36,7 @@ def createdatabase(database_url):
     cursor = conn.cursor()
 
     # Create student table
-
-    sql = "DROP TABLE IF EXISTS student;"
-    cursor.execute(sql)
-    conn.commit()
-
+    cursor.execute("DROP TABLE IF EXISTS student;")
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
        student_id        SERIAL       PRIMARY KEY,
@@ -56,11 +52,7 @@ def createdatabase(database_url):
 
 
     # Create teacher table
-
-    sql = f"DROP TABLE IF EXISTS teacher;"
-    cursor.execute(sql)
-    conn.commit()
-
+    cursor.execute("DROP TABLE IF EXISTS teacher;")
     cursor = conn.cursor()
     sql = '''CREATE TABLE teacher(
        teacher_id        SERIAL       PRIMARY KEY,
@@ -75,11 +67,7 @@ def createdatabase(database_url):
 
 
     # Create course table
-
-    sql = f"DROP TABLE IF EXISTS course;"
-    cursor.execute(sql)
-    conn.commit()
-
+    cursor.execute("DROP TABLE IF EXISTS course;")
     cursor = conn.cursor()
     sql = '''CREATE TABLE course(
        course_id        SERIAL       PRIMARY KEY,
@@ -96,11 +84,7 @@ def createdatabase(database_url):
 
 
     # Create assignment table
-
-    sql = f"DROP TABLE IF EXISTS assignment;"
-    cursor.execute(sql)
-    conn.commit()
-
+    cursor.execute("DROP TABLE IF EXISTS assignment;")
     cursor = conn.cursor()
     sql = '''CREATE TABLE assignment(
        assignment_id    SERIAL      PRIMARY KEY,
@@ -116,7 +100,6 @@ def createdatabase(database_url):
 
 
     # Create submission table
-
     cursor.execute('DROP TABLE IF EXISTS submission;')
     cursor.execute('''CREATE TABLE submission(
         submission_id   SERIAL PRIMARY KEY,
@@ -128,7 +111,6 @@ def createdatabase(database_url):
 
 
     # Create student_submission table
-
     cursor.execute('DROP TABLE IF EXISTS student_submission;')
     cursor.execute('''CREATE TABLE student_submission(
       student_id      INT,
@@ -139,7 +121,6 @@ def createdatabase(database_url):
 
 
     # Create student_course table
-
     cursor.execute('DROP TABLE IF EXISTS student_course;')
     cursor.execute('''CREATE TABLE student_course(
       course_id   INT,
