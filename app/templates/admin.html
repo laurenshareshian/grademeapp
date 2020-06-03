@@ -11,16 +11,30 @@
                     <thead>
                         <tr>
                             {% for column in columns %}
-                                <th>{{ column }}</th>
+                                <th>
+                                    {{ column['name'] }}
+                                    {% if column['pk'] %} *{% endif %}
+                                </th>
                             {% endfor %}
+                            <th>Options</th>
                         </tr>
                     </thead>
                     <tbody id="tablebody">
                         {% for row in table %}
                         <tr>
-                            {% for item in row %}
+                            {% for key,item in row.items() %}
                                 <td>{{ item }}</td>
                             {% endfor %}
+                            <td>
+                                <form method="POST" action="{{ url_for('delete_admin', table=title) }}">
+                                    {% for key,item in row.items() %}
+                                        {% if key in pks %}
+                                            <input type="text" name="{{ key }}" value="{{ item }}" hidden>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -34,12 +48,15 @@
                         <form action="/admin/{{ title }}" method="post">
                             {% for column in columns %}
                                 <div class="form-group">
-                                    <label for="edit{{ column }}">{{ column }}</label>
+                                    <label for="edit{{ column['name'] }}">
+                                        {{ column['name'] }}
+                                        {% if column['pk'] %} *{% endif %}
+                                    </label>
                                     <input type="text"
-                                           id="edit{{ column }}"
+                                           id="edit{{ column['name'] }}"
                                            class="form-control"
-                                           placeholder="{{ column }}"
-                                           name="{{ column}}">
+                                           placeholder="{{ column['name'] }}"
+                                           name="{{ column['name'] }}">
                                 </div>
                             {% endfor %}
                             <button type="submit" class="btn btn-primary">Insert</button>

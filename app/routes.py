@@ -1022,7 +1022,7 @@ def login(id):
 
 # Admin page
 @app.route('/admin', methods=['GET'])
-@app.route('/admin/<table>', methods=['GET', 'POST'])
+@app.route('/admin/<table>', methods=['GET', 'POST', 'DELETE'])
 def viewadmin(table=None):
 
     db_conn = db_pool.getconn()
@@ -1040,6 +1040,7 @@ def viewadmin(table=None):
 
         return render_template('admin.html', table_names=table_names)
 
+    # get admin table
     if request.method == 'GET':
         cur = db_conn.cursor()
         cur.execute("""
@@ -1053,11 +1054,21 @@ def viewadmin(table=None):
         if table not in table_names:
             abort(404, 'Invalid table name')
 
-        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
+        dict_cur.execute("""
+                SELECT c.column_name, c.ordinal_position, t.constraint_type, t.table_name
+                FROM information_schema.key_column_usage AS c
+                LEFT JOIN information_schema.table_constraints AS t
+                ON t.constraint_name = c.constraint_name
+                WHERE t.table_name = %s
+                AND t.constraint_type = 'PRIMARY KEY';
+            """, (table,))
+        pks = [row['column_name'] for row in dict_cur]
+
         dict_cur.execute(
             sql.SQL('SELECT * FROM {}').format(sql.Identifier(table))
         )
-        columns = [desc[0] for desc in dict_cur.description]
+        columns = [{ 'name': desc[0], 'pk': desc[0] in pks } for desc in dict_cur.description]
         records = dict_cur.fetchall()
         dict_cur.close()
 
@@ -1068,7 +1079,10 @@ def viewadmin(table=None):
             table=records,
             columns=columns,
             table_names=table_names,
-            title=table)
+            title=table,
+            pks=','.join(pks)
+        )
+    # insert entry
     else:
         values = [v if v != '' else None for v in request.form.values()]
 
@@ -1088,5 +1102,32 @@ def viewadmin(table=None):
 
         cur.close()
         db_pool.putconn(db_conn)
+
+        return redirect('/admin/{}'.format(table))
+
+
+@app.route('/admin/delete/<table>', methods = ['POST'])
+def delete_admin(table=None):
+        db_conn = db_pool.getconn()
+        cur = db_conn.cursor()
+
+        # get primary keys of table
+        pks = [{ 'pk': key, 'id': value } for key, value in request.form.items()]
+
+        # get up to two pks
+        first_key = pks[0]['pk']
+        first_val = str(pks[0]['id'])
+        second_key = pks[1]['pk'] if len(pks) == 2 else ''
+        second_val = str(pks[1]['id']) if len(pks) == 2 else ''
+
+        # compose query
+        query = f'DELETE FROM {table} WHERE {first_key} = {first_val}'
+        if second_key:
+            query = f'{query} AND {second_key} = {second_val}'
+        query = f'{query};'
+
+        cur.execute(query)
+        db_conn.commit()
+        cur.close()
 
         return redirect('/admin/{}'.format(table))
