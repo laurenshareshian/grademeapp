@@ -45,7 +45,7 @@
                 <div class="panel panel-info">
                     <div class="panel-heading">Insert {{ title }}</div>
                     <div class="panel-body">
-                        <form action="/admin/{{ title }}" method="post">
+                        <form action="{{ url_for('add_admin', table=title) }}" method="post">
                             {% for column in columns %}
                                 <div class="form-group">
                                     <label for="edit{{ column['name'] }}">
@@ -69,7 +69,7 @@
         <ul class="list-group">
             {% for name in table_names %}
                 <li class="list-group-item">
-                    <a href="/admin/{{ name }}">{{ name }}</a>
+                    <a href="{{ url_for('view_admin', table=name) }}">{{ name }}</a>
                 </li>
             {% endfor %}
         </ul>
