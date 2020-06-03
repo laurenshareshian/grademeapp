@@ -1106,7 +1106,7 @@ def add_admin(table=None):
     cur.close()
     db_pool.putconn(db_conn)
 
-    return redirect('/admin/{}'.format(table))
+    return redirect('/admin/view/{}'.format(table))
 
 
 @app.route('/admin/delete/<table>', methods = ['POST'])
@@ -1138,4 +1138,4 @@ def delete_admin(table=None):
 
     cur.close()
 
-    return redirect('/admin/{}'.format(table))
+    return redirect('/admin/view/{}'.format(table))
