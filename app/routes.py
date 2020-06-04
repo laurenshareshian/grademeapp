@@ -1119,18 +1119,14 @@ def delete_admin(table=None):
     cur = db_conn.cursor()
 
     # get primary keys of table
-    pks = [{ 'pk': key, 'id': value } for key, value in request.form.items()]
-
-    # get up to two pks
-    first_key = pks[0]['pk']
-    first_val = str(pks[0]['id'])
-    second_key = pks[1]['pk'] if len(pks) == 2 else ''
-    second_val = str(pks[1]['id']) if len(pks) == 2 else ''
+    row_ids = [(key, value) for key, value in request.form.items()]
 
     # compose query
-    query = f'DELETE FROM {table} WHERE {first_key} = {first_val}'
-    if second_key:
-        query = f'{query} AND {second_key} = {second_val}'
+    query = f'DELETE FROM {table} WHERE {row_ids[0][0]} = {row_ids[0][1]}'
+
+    # check for composite key
+    for row_id in row_ids[1:]:
+        query = f'{query} AND {row_id[0]} = {row_id[1]}'
     query = f'{query};'
 
     try:
