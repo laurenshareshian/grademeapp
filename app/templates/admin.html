@@ -11,12 +11,12 @@
                     <thead>
                         <tr>
                             {% for column in columns %}
-                                <th>
+                                <th {% if column['pk'] %} class='pk' {% endif %}>
                                     {{ column['name'] }}
-                                    {% if column['pk'] %} *{% endif %}
                                 </th>
                             {% endfor %}
-                            <th>Options</th>
+                            <th> </th>
+                            <th> </th>
                         </tr>
                     </thead>
                     <tbody id="tablebody">
@@ -25,6 +25,16 @@
                             {% for key,item in row.items() %}
                                 <td>{{ item }}</td>
                             {% endfor %}
+                            <td>
+                                <form method="GET" action="{{ url_for('update_admin', table=title) }}">
+                                    {% for key,item in row.items() %}
+                                        {% if key in pks %}
+                                            <input type="text" name="{{ key }}" value="{{ item }}" hidden>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <button class="btn btn-sm btn-info" type="submit">Edit</button>
+                                </form>
+                            </td>
                             <td>
                                 <form method="POST" action="{{ url_for('delete_admin', table=title) }}">
                                     {% for key,item in row.items() %}
@@ -48,9 +58,8 @@
                         <form action="{{ url_for('add_admin', table=title) }}" method="post">
                             {% for column in columns %}
                                 <div class="form-group">
-                                    <label for="edit{{ column['name'] }}">
+                                    <label {% if column['pk'] %} class='pk' {% endif %} for="edit{{ column['name'] }}">
                                         {{ column['name'] }}
-                                        {% if column['pk'] %} *{% endif %}
                                     </label>
                                     <input type="text"
                                            id="edit{{ column['name'] }}"
