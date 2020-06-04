@@ -1092,16 +1092,21 @@ def add_admin(table=None):
     db_conn = db_pool.getconn()
     cur = db_conn.cursor()
 
-    values = [v.strip() if v != '' else None for v in request.form.values()]
+    columns = []
+    values = []
+
+    # ignore columns with empty values
+    for col in request.form.keys():
+        if (request.form.get(col)) != '':
+            columns.append(col)
+            values.append(request.form.get(col))
+
+    query = f'INSERT INTO {table} ({", ".join(columns)}) VALUES %s;'
+    params = (tuple(values),)
+    query = cur.mogrify(query, params)
 
     try:
-        cur.execute(
-            sql.SQL('INSERT INTO {} VALUES ({})').format(
-                sql.Identifier(table),
-                sql.SQL(', ').join(sql.Placeholder() * len(values))
-            ),
-            values
-        )
+        cur.execute(query)
         db_conn.commit()
     except Exception as err:
         session['error'] = str(err)

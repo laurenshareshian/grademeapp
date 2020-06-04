@@ -47,8 +47,8 @@
                                            value="{{ row[col] }}">
                                 </div>
                             {% endfor %}
-                            <button type="submit" class="btn btn-primary">Save</button>
-                            <a href="{{ url_form('view_admin', table=title) }}" class="btn btn-outline">
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <a href="{{ url_for('view_admin', table=title) }}" class="btn btn-link">
                                 Cancel
                             </a>
                         </form>
