@@ -60,3 +60,8 @@ class SubmissionForm(FlaskForm):
         super().__init__(*args, **kwargs)
         if not self.sub_time.data:
             self.sub_time.data = datetime.datetime.now()
+
+
+class EnrollForm(FlaskForm):
+    student = SelectField('Student')
+    submit = SubmitField('Enroll')

@@ -2,7 +2,7 @@ from flask import render_template, redirect, url_for, \
     request, session, abort, g
 from app import app
 from app.forms import TeacherForm, StudentForm, \
-    AssignmentForm, CourseForm, SubmissionForm
+    AssignmentForm, CourseForm, SubmissionForm, EnrollForm
 from psycopg2 import sql, extras
 import numpy as np
 from app.db import db_pool
@@ -375,14 +375,14 @@ def deleteStudent(student_id, course_id):
     cursor.execute(sql)
     db_conn.commit()
     # delete student from student_submissions related to this course
-    sql = f'''SELECT student_submission.submission_id 
+    sql = f'''SELECT student_submission.submission_id
     FROM student_submission
     INNER JOIN submission
-    ON student_submission.submission_id = submission.submission_id 
+    ON student_submission.submission_id = submission.submission_id
     INNER JOIN student
     ON student_submission.student_id = student.student_id
     INNER JOIN assignment
-    ON submission.assignment = assignment.assignment_id 
+    ON submission.assignment = assignment.assignment_id
     WHERE assignment.course={course_id} and student.student_id = {student_id};'''
     cursor.execute(sql)
     submissions = [item[0] for item in cursor.fetchall()]
@@ -395,6 +395,48 @@ def deleteStudent(student_id, course_id):
     db_pool.putconn(db_conn)
 
     return redirect(url_for('view_course', course_id=course_id))
+
+@app.route('/enrollstudent/<course_id>', methods=['GET', 'POST'])
+def enrollstudent(course_id=None):
+    if request.method == 'GET':
+        db_conn = db_pool.getconn()
+        dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
+
+        # get course name
+        dict_cur.execute('SELECT title FROM course WHERE course_id = %s', course_id)
+        course_title = dict_cur.fetchone()['title']
+
+        # get all students who aren't enrolled already
+        query = '''
+            SELECT student.student_id, first_name, last_name
+            FROM student
+            WHERE student_id NOT IN
+            (SELECT student_id FROM student_course WHERE course_id = %s);
+        '''
+        dict_cur.execute(query, course_id)
+
+        form = EnrollForm()
+        form.student.choices = [(row['student_id'], f"{row['first_name']} {row['last_name']}") for row in dict_cur]
+
+        dict_cur.close()
+        db_pool.putconn(db_conn)
+        return render_template('enrollstudent.html', course_id=course_id, form=form, course_title=course_title)
+    else:
+        db_conn = db_pool.getconn()
+        cur = db_conn.cursor()
+
+        query = 'INSERT INTO student_course (student_id, course_id) VALUES (%s, %s)'
+        try:
+            cur.execute(query, (request.form['student'], course_id))
+            db_conn.commit()
+        except Exception as err:
+            session['error'] = str(err)
+            db_conn.rollback()
+
+        cur.close()
+        db_pool.putconn(db_conn)
+        return redirect(url_for('view_course', course_id=course_id))
+
 
 #################################
 # Assignment Stuff

@@ -1,0 +1,21 @@
+{% extends "template.html" %}
+
+{% block app_content %}
+
+<div class="container">
+  <div class="formscontainer">
+    <div class="form">
+      <h3>Enroll Student in {{ course_title }}</h3>
+      <form action="{{ url_for('enrollstudent', course_id=course_id) }}" method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <p>
+              {{ form.student.label }}<br>
+              {{ form.student() }}
+          </p>
+          {{ form.submit() }}
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

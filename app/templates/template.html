@@ -56,6 +56,7 @@
 {% block content %}
 
     <div class="container">
+        {% include "error.html" %}
         {# application content needs to be provided in the app_content block #}
         {% block app_content %}{% endblock %}
     </div>
