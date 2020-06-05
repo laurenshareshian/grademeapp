@@ -66,7 +66,7 @@ def seed_assignment(cursor):
     "INSERT INTO assignment (title, description, due, points, course) VALUES %s",
     [
       ('HW 1', 'Book exercises', '2020-01-01', 5, 1),
-      ('Test 1', 'Derivatives', '2020-01-02', 50, 1),
+      ('Group Project', 'Derivatives', '2020-01-02', 50, 1),
       ('Exam 1', 'Slope', '2020-01-02', 50, 3),
       ('Basket 1', 'basket', '2020-01-02', 100, 2),
       ('Foot tickle', 'tickle', '2020-01-02', 100, 4),
