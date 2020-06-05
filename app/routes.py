@@ -1026,11 +1026,12 @@ def login(id):
 
 # Admin page
 @app.route('/admin', methods=['GET'])
-@app.route('/admin/<table>', methods=['GET', 'POST'])
-def viewadmin(table=None):
+@app.route('/admin/view/<table>', methods=['GET'])
+def view_admin(table=None):
 
     db_conn = db_pool.getconn()
 
+    # show list of tables
     if not table:
         cur = db_conn.cursor()
         cur.execute("""
@@ -1044,8 +1045,121 @@ def viewadmin(table=None):
 
         return render_template('admin.html', table_names=table_names)
 
+    # show rows for selected table
+    cur = db_conn.cursor()
+    cur.execute("""
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE (table_schema = 'public')
+        """)
+    table_names = [name[0] for name in cur.fetchall()]
+    cur.close()
+
+    if table not in table_names:
+        abort(404, 'Invalid table name')
+
+    dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
+    dict_cur.execute("""
+            SELECT c.column_name, c.ordinal_position, t.constraint_type, t.table_name
+            FROM information_schema.key_column_usage AS c
+            LEFT JOIN information_schema.table_constraints AS t
+            ON t.constraint_name = c.constraint_name
+            WHERE t.table_name = %s
+            AND t.constraint_type = 'PRIMARY KEY';
+        """, (table,))
+    pks = [row['column_name'] for row in dict_cur]
+
+    dict_cur.execute(
+        sql.SQL('SELECT * FROM {}').format(sql.Identifier(table))
+    )
+    columns = [{ 'name': desc[0], 'pk': desc[0] in pks } for desc in dict_cur.description]
+    records = dict_cur.fetchall()
+    dict_cur.close()
+
+    db_pool.putconn(db_conn)
+
+    return render_template(
+        'admin.html',
+        table=records,
+        columns=columns,
+        table_names=table_names,
+        title=table,
+        pks=','.join(pks)
+    )
+
+
+@app.route('/admin/new/<table>', methods = ['POST'])
+def add_admin(table=None):
+    if not table:
+        return redirect('/admin')
+
+    db_conn = db_pool.getconn()
+    cur = db_conn.cursor()
+
+    columns = []
+    values = []
+
+    # ignore columns with empty values
+    for col in request.form.keys():
+        if (request.form.get(col)) != '':
+            columns.append(col)
+            values.append(request.form.get(col))
+
+    query = f'INSERT INTO {table} ({", ".join(columns)}) VALUES %s;'
+    params = (tuple(values),)
+    query = cur.mogrify(query, params)
+
+    try:
+        cur.execute(query)
+        db_conn.commit()
+    except Exception as err:
+        session['error'] = str(err)
+        db_conn.rollback()
+
+    cur.close()
+    db_pool.putconn(db_conn)
+
+    return redirect('/admin/view/{}'.format(table))
+
+
+@app.route('/admin/delete/<table>', methods = ['POST'])
+def delete_admin(table=None):
+    db_conn = db_pool.getconn()
+    cur = db_conn.cursor()
+
+    # get primary keys of table
+    row_ids = [(key, value) for key, value in request.form.items()]
+
+    # compose query
+    query = f'DELETE FROM {table} WHERE {row_ids[0][0]} = {row_ids[0][1]}'
+
+    # check for composite key
+    for row_id in row_ids[1:]:
+        query = f'{query} AND {row_id[0]} = {row_id[1]}'
+    query = f'{query};'
+
+    try:
+        cur.execute(query)
+        db_conn.commit()
+    except Exception as err:
+        session['error'] = str(err)
+        db_conn.rollback()
+
+    cur.close()
+
+    return redirect('/admin/view/{}'.format(table))
+
+
+@app.route('/admin/update/<table>', methods=['GET', 'POST'])
+def update_admin(table=None):
+    if not table:
+        return redirect('/admin')
+
     if request.method == 'GET':
+        db_conn = db_pool.getconn()
         cur = db_conn.cursor()
+
+        # show rows for selected table
         cur.execute("""
             SELECT table_name
             FROM information_schema.tables
@@ -1057,34 +1171,79 @@ def viewadmin(table=None):
         if table not in table_names:
             abort(404, 'Invalid table name')
 
-        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+        dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
+        dict_cur.execute("""
+                SELECT c.column_name, c.ordinal_position, t.constraint_type, t.table_name
+                FROM information_schema.key_column_usage AS c
+                LEFT JOIN information_schema.table_constraints AS t
+                ON t.constraint_name = c.constraint_name
+                WHERE t.table_name = %s
+                AND t.constraint_type = 'PRIMARY KEY';
+            """, (table,))
+        pks = [row['column_name'] for row in dict_cur]
+
         dict_cur.execute(
             sql.SQL('SELECT * FROM {}').format(sql.Identifier(table))
         )
-        columns = [desc[0] for desc in dict_cur.description]
+        columns = [{ 'name': desc[0], 'pk': desc[0] in pks } for desc in dict_cur.description]
         records = dict_cur.fetchall()
-        dict_cur.close()
 
+        # get row for update form
+        # get primary keys of row
+        row_ids = [(arg, request.args.get(arg)) for arg in request.args.keys()]
+
+        # compose query
+        query = f'SELECT * FROM {table} WHERE {row_ids[0][0]} = {row_ids[0][1]}'
+
+        # check for composite key
+        for row_id in row_ids[1:]:
+            query = f'{query} AND {row_id[0]} = {row_id[1]}'
+        query = f'{query};'
+
+        dict_cur.execute(query)
+        row = dict_cur.fetchone()
+
+        dict_cur.close()
         db_pool.putconn(db_conn)
 
+        if not row:
+            abort(404, 'No identifiable row found')
+
+        # 'ids' are original row keys in case keys are changed
         return render_template(
-            'admin.html',
+            'admin_update.html',
             table=records,
             columns=columns,
             table_names=table_names,
-            title=table)
+            title=table,
+            row=row,
+            ids=request.args
+        )
     else:
-        values = [v if v != '' else None for v in request.form.values()]
-
+        db_conn = db_pool.getconn()
         cur = db_conn.cursor()
+
+        keys = request.form.keys()
+        values = [v.strip() for v in request.form.values()]
+
+        query = f'UPDATE {table} SET ({", ".join(keys)}) = %s'
+
+        # get primary keys of updating row
+        row_ids = [(arg, request.args.get(arg)) for arg in request.args.keys()]
+
+        # compose query
+        query = f'{query} WHERE {row_ids[0][0]} = {row_ids[0][1]}'
+
+        # check for composite key
+        for row_id in row_ids[1:]:
+            query = f'{query} AND {row_id[0]} = {row_id[1]}'
+        query = f'{query};'
+
+        params = (tuple(values),)
+        query = cur.mogrify(query, params)
+
         try:
-            cur.execute(
-                sql.SQL('INSERT INTO {} VALUES ({})').format(
-                    sql.Identifier(table),
-                    sql.SQL(', ').join(sql.Placeholder() * len(values))
-                ),
-                values
-            )
+            cur.execute(query)
             db_conn.commit()
         except Exception as err:
             session['error'] = str(err)
@@ -1093,4 +1252,7 @@ def viewadmin(table=None):
         cur.close()
         db_pool.putconn(db_conn)
 
-        return redirect('/admin/{}'.format(table))
+        return redirect('/admin/view/{}'.format(table))
+
+
+

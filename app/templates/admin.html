@@ -11,16 +11,40 @@
                     <thead>
                         <tr>
                             {% for column in columns %}
-                                <th>{{ column }}</th>
+                                <th {% if column['pk'] %} class='pk' {% endif %}>
+                                    {{ column['name'] }}
+                                </th>
                             {% endfor %}
+                            <th> </th>
+                            <th> </th>
                         </tr>
                     </thead>
                     <tbody id="tablebody">
                         {% for row in table %}
                         <tr>
-                            {% for item in row %}
+                            {% for key,item in row.items() %}
                                 <td>{{ item }}</td>
                             {% endfor %}
+                            <td>
+                                <form method="GET" action="{{ url_for('update_admin', table=title) }}">
+                                    {% for key,item in row.items() %}
+                                        {% if key in pks %}
+                                            <input type="text" name="{{ key }}" value="{{ item }}" hidden>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <button class="btn btn-sm btn-info" type="submit">Edit</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ url_for('delete_admin', table=title) }}">
+                                    {% for key,item in row.items() %}
+                                        {% if key in pks %}
+                                            <input type="text" name="{{ key }}" value="{{ item }}" hidden>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+                                </form>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -31,15 +55,17 @@
                 <div class="panel panel-info">
                     <div class="panel-heading">Insert {{ title }}</div>
                     <div class="panel-body">
-                        <form action="/admin/{{ title }}" method="post">
+                        <form action="{{ url_for('add_admin', table=title) }}" method="post">
                             {% for column in columns %}
                                 <div class="form-group">
-                                    <label for="edit{{ column }}">{{ column }}</label>
+                                    <label {% if column['pk'] %} class='pk' {% endif %} for="edit{{ column['name'] }}">
+                                        {{ column['name'] }}
+                                    </label>
                                     <input type="text"
-                                           id="edit{{ column }}"
+                                           id="edit{{ column['name'] }}"
                                            class="form-control"
-                                           placeholder="{{ column }}"
-                                           name="{{ column}}">
+                                           placeholder="{{ column['name'] }}"
+                                           name="{{ column['name'] }}">
                                 </div>
                             {% endfor %}
                             <button type="submit" class="btn btn-primary">Insert</button>
@@ -52,7 +78,7 @@
         <ul class="list-group">
             {% for name in table_names %}
                 <li class="list-group-item">
-                    <a href="/admin/{{ name }}">{{ name }}</a>
+                    <a href="{{ url_for('view_admin', table=name) }}">{{ name }}</a>
                 </li>
             {% endfor %}
         </ul>
