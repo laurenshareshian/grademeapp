@@ -6,6 +6,7 @@ def seed(cursor):
   seed_teacher(cursor)
   seed_course(cursor)
   seed_assignment(cursor)
+  seed_submission(cursor)
   seed_student_submission(cursor)
   seed_student_course(cursor)
 
@@ -100,7 +101,8 @@ def seed_student_submission(cursor):
       (1, 3),
       (2, 1),
       (2, 4),
-      (1, 5)
+      (1, 5),
+      (3, 3),
     ]
   )
 

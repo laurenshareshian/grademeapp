@@ -5,7 +5,7 @@
 	<div class="formscontainer">
 		<div class="form">
 		    <h3>Add New Submission</h3>
-            {% if submission_form.students | length != 0 %}
+            {% if student_id or submission_form.students | length != 0 %}
                 <form action="{{ url_for('saveAddSubmission', course_id=course_id, assignment_id=assignment_id, student_id=student_id) }}" method="post" novalidate>
                     {{ submission_form.hidden_tag() }}
                     <p>

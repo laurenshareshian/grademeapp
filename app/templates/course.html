@@ -3,6 +3,7 @@
 {% block app_content %}
 
 <div class="container">
+    <p class="lead">Below, you can click on a student, assignment, or submission to edit or delete them. You can also click on the course name to edit the course details.</p>
     <h2>
         Gradebook for
         <small>
@@ -56,9 +57,7 @@
                                 {{ grades[students.index(student)][assignments.index(assignment)] | int }}%
                             </a>
                         {% else %}
-                            <a href="{{ url_for('addSubmission', course_id=course.course_id, assignment_id=assignment.assignment_id, student_id=student.student_id)}}">
-                                {{ grades[students.index(student)][assignments.index(assignment)] | int }}%
-                            </a>
+                            <a href="{{ url_for('addSubmission', course_id=course.course_id, assignment_id=assignment.assignment_id, student_id=student.student_id)}}">{{ grades[students.index(student)][assignments.index(assignment)] | int }}%</a>
                         {% endif %}
                         </td>
                     {% endfor %}

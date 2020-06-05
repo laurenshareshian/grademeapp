@@ -98,13 +98,6 @@ def saveAddTeacher():
 def renderTeachers(teacher_id=None):
     """display teacher courses"""
 
-    # trying to get teacher info to update after teacher edit
-    # but heroku says too many connections
-    # if not teacher_id:
-    #     teacher_id = str(session.get('user')['id'])
-    # else:
-    #     login(teacher_id)
-
     teacher_id = str(session.get('user')['id'])
 
     db_conn = db_pool.getconn()
@@ -303,14 +296,11 @@ def student(student_id, course_id):
         f"INNER JOIN teacher on course.teacher = teacher.teacher_id "
         f"WHERE student.student_id = {student_id}")
     courses = dict_cur.fetchall()
-    if len(courses):
-        print(courses)
-    else:
+    if not len(courses):
         dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
         dict_cur.execute(
             f"SELECT * FROM student WHERE student_id={student_id};")
         courses = dict_cur.fetchall()
-        print(courses)
 
     dict_cur.close()
     db_pool.putconn(db_conn)
@@ -379,10 +369,28 @@ def deleteStudent(student_id, course_id):
     """process delete student"""
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
+    # delete student from student_course
     sql = f'''DELETE FROM student_course
     WHERE student_id={student_id} and course_id={course_id};'''
     cursor.execute(sql)
     db_conn.commit()
+    # delete student from student_submissions related to this course
+    sql = f'''SELECT student_submission.submission_id 
+    FROM student_submission
+    INNER JOIN submission
+    ON student_submission.submission_id = submission.submission_id 
+    INNER JOIN student
+    ON student_submission.student_id = student.student_id
+    INNER JOIN assignment
+    ON submission.assignment = assignment.assignment_id 
+    WHERE assignment.course={course_id} and student.student_id = {student_id};'''
+    cursor.execute(sql)
+    submissions = [item[0] for item in cursor.fetchall()]
+    for submission in submissions:
+        sql = f'''DELETE FROM student_submission
+        WHERE student_id={student_id} and submission_id={submission};'''
+        cursor.execute(sql)
+        db_conn.commit()
     cursor.close()
     db_pool.putconn(db_conn)
 
@@ -674,14 +682,12 @@ def view_course(course_id):
                 f"AND assignment.assignment_id "
                 f"= {assignment['assignment_id']};")
             results = dict_cur.fetchall()
-            print(results)
             if len(results):
                 grades[j, i] = results[0][3]
                 submissions[j, i] = results[0][2]
             else:
                 grades[j, i] = None
                 submissions[j, i] = 0
-        print(grades)
     dict_cur.close()
     db_pool.putconn(db_conn)
 
@@ -865,7 +871,6 @@ def saveAddSubmission(course_id, assignment_id, student_id=None):
     sub_date = request.form['sub_time']
     if not student_id:
         student_id = request.form['students']
-        print(student)
 
     db_conn = db_pool.getconn()
     cursor = db_conn.cursor()
@@ -879,7 +884,7 @@ def saveAddSubmission(course_id, assignment_id, student_id=None):
                     assignment_id))
     db_conn.commit()
     submission_id = cursor.fetchall()[0][0]
-
+    print('submission', student_id, submission_id)
     sql = f'''INSERT INTO student_submission
     (student_id, submission_id)
     VALUES (%s, %s);'''
@@ -934,7 +939,6 @@ def saveEditSubmission(submission_id, course_id, item_id, redirect_option):
     form = SubmissionForm(request.form)
     submission = {}
     if request.method == 'POST' and form.validate():
-        print(form)
         submission['submitted'] = request.form['sub_time']
         submission['grade'] = request.form['grade']
         db_conn = db_pool.getconn()

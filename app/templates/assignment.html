@@ -2,44 +2,8 @@
 
 {% block app_content %}
 <div class="container">
-    <h2>
-        Details for
-        <small>
-            <a href="{{ url_for('editAssignment', assignment_id=submissions[0].assignment_id, course_id=submissions[0].course_id) }}">
-                {{ submissions[0].title}}
-            </a> in
-            <a href="{{ url_for('view_course', course_id=submissions[0].course_id, teacher_id=submissions[0].teacher_id) }}">
-                {{ submissions[0].course_title}}
-            </a>
-        </small>
-    </h2>
-    <table class="table table-striped table-hover">
-        <thead>
-            <tr>
-                <th>Assignment Name</th>
-                <th>Description</th>
-                <th>Points</th>
-                <th>Due</th>
-                <th>Options</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{ submissions[0].title}}</td>
-                <td>{{ submissions[0].description }}</td>
-                <td>{{ submissions[0].points }}</td>
-                <td>{{ submissions[0].due }}</td>
-                <td>
-                    <a href="{{ url_for('editAssignment', assignment_id=submissions[0].assignment_id, course_id=submissions[0].course_id) }}">
-                Edit/Delete
-                    </a>
-                </td>
-            </tr>
+    <p class="lead">Below, you can view the assignment's submissions or add new ones for students who have not yet submitted. You can also click on the assignment name to edit or delete it.</p>
 
-        </tbody>
-    </table><!-- table table-striped -->
-
-    <br><br><br><br>
     <h2>
         Submissions for
         <small>
