@@ -399,11 +399,16 @@ def deleteStudent(student_id, course_id):
 @app.route('/enrollstudent/<course_id>', methods=['GET', 'POST'])
 def enrollstudent(course_id=None):
     if request.method == 'GET':
+        if not course_id:
+            abort(404, 'invalid course')
+
         db_conn = db_pool.getconn()
         dict_cur = db_conn.cursor(cursor_factory=extras.RealDictCursor)
 
+        print(f'course_id: {course_id}')
+
         # get course name
-        dict_cur.execute('SELECT title FROM course WHERE course_id = %s', course_id)
+        dict_cur.execute('SELECT title FROM course WHERE course_id = %s;', (course_id,))
         course_title = dict_cur.fetchone()['title']
 
         # get all students who aren't enrolled already
@@ -413,7 +418,7 @@ def enrollstudent(course_id=None):
             WHERE student_id NOT IN
             (SELECT student_id FROM student_course WHERE course_id = %s);
         '''
-        dict_cur.execute(query, course_id)
+        dict_cur.execute(query, (course_id,))
 
         form = EnrollForm()
         form.student.choices = [(row['student_id'], f"{row['first_name']} {row['last_name']}") for row in dict_cur]
