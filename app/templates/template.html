@@ -2,6 +2,7 @@
 
  {% block styles %}
  {{super()}}
+     <link rel="shortcut icon" href="{{ url_for('static', filename='images/check.png') }}">
   <link rel="stylesheet" href="{{url_for('static', filename='css/template.css')}}"> <!-- on local computer use .static -->
  {% endblock %}
 
@@ -12,15 +13,9 @@
 {% block navbar %}
     <nav class="navbar navbar-default">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">GradeMe</a>
-            </div>
+        <a class="navbar-brand" href="/">
+            <img height="50" src="{{ url_for('static', filename = 'images/check.png') }}"/>
+        </a>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
                     <li>
@@ -58,9 +53,23 @@
 
 {% block content %}
 
-    <div class="container">
+    <div class="container content">
         {% include "error.html" %}
         {# application content needs to be provided in the app_content block #}
         {% block app_content %}{% endblock %}
     </div>
+
+    <nav class="navbar navbar-default" >
+        <div class="container" id="footertext">
+            <div id="div1footer">
+                Made @ <a href="https://engineering.oregonstate.edu/"><img height="40" src="{{ url_for('static', filename = 'images/osu2.jpeg') }}"/> </a>
+            </div>
+            <div id="div2footer">
+                GradeMe &copy 2020
+            </div>
+            <div id="div3footer">
+                Code @ <a href="https://github.com/laurenshareshian/grademeapp"><img height="40" src="{{ url_for('static', filename = 'images/github.png') }}"/> </a>
+            </div>
+        </div>
+    </nav>
 {% endblock %}

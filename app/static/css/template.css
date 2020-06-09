@@ -32,3 +32,40 @@ body {
 .pk {
   text-decoration: underline;
 }
+
+.navbar-brand {
+	padding:0px;
+}
+
+img {
+	margin-right:50px;
+}
+
+.content {
+		min-height:100vh;
+}
+
+
+#footertext {
+	align-items: center;
+    display: flex;
+	    font-size: 18px;
+    line-height: 20px;
+	padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+#div1footer {
+	margin-right:auto;
+}
+#div2footer {
+	justify-self: center;
+}
+#div3footer {
+	margin-left: auto;
+}
+
+.lead {
+	padding-top:30px;
+	padding-bottom:30px;
+}

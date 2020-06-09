@@ -259,18 +259,20 @@ def student(student_id, course_id):
         assignment.title, submission.submission_id, first_name,
         last_name, grade, submitted, assignment
         FROM submission
-        INNER JOIN student_submission
+        LEFT JOIN student_submission
         ON student_submission.submission_id = submission.submission_id
-        INNER JOIN student
+        LEFT JOIN student
         ON student.student_id = student_submission.student_id
-        INNER JOIN student_course
+        LEFT JOIN student_course
         ON student.student_id = student_course.student_id
-        INNER JOIN assignment
+        LEFT JOIN assignment
         ON submission.assignment = assignment.assignment_id
         WHERE student.student_id = {student_id}
-        AND student_course.course_id = {course_id};
+        AND assignment.course = {course_id};
         ''')
     submissions = dict_cur.fetchall()
+    print('course id', course_id, student_id)
+    print('subs',submissions)
     if not len(submissions):
         dict_cur.execute(f'''
             SELECT student.student_id, student_course.course_id,
