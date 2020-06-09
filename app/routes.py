@@ -257,20 +257,18 @@ def student(student_id, course_id):
 
     ### get all submissions for the student in THIS course
     dict_cur.execute(f'''
-    SELECT student_course.student_id, student_course.course_id, 
-    assignment.title, submission.submission_id, student.first_name,
-    student.last_name, submission.grade, submission.submitted
-    FROM student_course 
-    LEFT JOIN student 
-    ON student_course.student_id = student.student_id 
-    LEFT JOIN student_submission
-    ON student.student_id = student_submission.submission_id 
-    LEFT JOIN assignment 
-    ON student_course.course_id = assignment.course 
+    SELECT *
+    FROM student_submission 
+    LEFT JOIN student
+    ON student_submission.student_id = student.student_id
+    LEFT JOIN student_course
+    ON student.student_id = student_course.student_id
     LEFT JOIN submission
-    ON assignment.assignment_id = submission.assignment 
-    WHERE student_course.course_id = {course_id} 
-    AND student_course.student_id = {student_id};
+    ON student_submission.submission_id = submission.submission_id
+    LEFT JOIN assignment
+    ON submission.assignment = assignment.assignment_id
+    WHERE student_submission.student_id = {student_id}
+    AND (student_course.course_id = {course_id} AND assignment.course = {course_id});
     ''')
 
     submissions = dict_cur.fetchall()
@@ -1052,18 +1050,22 @@ WHERE submission_id = {submission_id};'''
     cursor.close()
     db_pool.putconn(db_conn)
 
-    if redirect_option == "student":
-        return redirect(
-            url_for(
-                'student',
-                student_id=item_id,
-                course_id=course_id))
-    else:
-        return redirect(
-            url_for(
-                'assignment',
-                assignment_id=item_id,
-                course_id=course_id))
+    # if redirect_option == "student":
+    #     return redirect(
+    #         url_for(
+    #             'student',
+    #             student_id=item_id,
+    #             course_id=course_id))
+    # else:
+    #     return redirect(
+    #         url_for(
+    #             'assignment',
+    #             assignment_id=item_id,
+    #             course_id=course_id))
+    return redirect(
+        url_for(
+            'view_course',
+            course_id=course_id))
 
 
 # Login route
