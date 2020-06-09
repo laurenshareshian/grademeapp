@@ -40,11 +40,11 @@ def createdatabase(database_url):
     cursor = conn.cursor()
     sql = '''CREATE TABLE student(
        student_id        SERIAL       PRIMARY KEY,
-       first_name        CHAR(50)     NOT NULL,
-       last_name         CHAR(50)     NOT NULL,
-       year              INT          NOT NULL,
-       email             CHAR(50)     NOT NULL,
-       telephone         CHAR(10)
+       first_name        VARCHAR(50)     NOT NULL,
+       last_name         VARCHAR(50)     NOT NULL,
+       year              INT             NOT NULL,
+       email             VARCHAR(50)     NOT NULL,
+       telephone         VARCHAR(10)
     );
     '''
     cursor.execute(sql)
@@ -56,10 +56,10 @@ def createdatabase(database_url):
     cursor = conn.cursor()
     sql = '''CREATE TABLE teacher(
        teacher_id        SERIAL       PRIMARY KEY,
-       first_name        CHAR(50)     NOT NULL,
-       last_name         CHAR(50)     NOT NULL,
-       email             CHAR(50)     NOT NULL,
-       telephone         CHAR(10)
+       first_name        VARCHAR(50)     NOT NULL,
+       last_name         VARCHAR(50)     NOT NULL,
+       email             VARCHAR(50)     NOT NULL,
+       telephone         VARCHAR(10)
     );
     '''
     cursor.execute(sql)
@@ -71,11 +71,11 @@ def createdatabase(database_url):
     cursor = conn.cursor()
     sql = '''CREATE TABLE course(
        course_id        SERIAL       PRIMARY KEY,
-       title            CHAR(50)     NOT NULL,
-       section          INT          NOT NULL,
-       department       CHAR(50)     NOT NULL,
-       description      CHAR(200)    NOT NULL,
-       units            INT          NOT NULL,
+       title            VARCHAR(50)     NOT NULL,
+       section          INT             NOT NULL,
+       department       VARCHAR(50)     NOT NULL,
+       description      VARCHAR(200)    NOT NULL,
+       units            REAL            NOT NULL,
        teacher          INT
     );
     '''
@@ -88,8 +88,8 @@ def createdatabase(database_url):
     cursor = conn.cursor()
     sql = '''CREATE TABLE assignment(
        assignment_id    SERIAL      PRIMARY KEY,
-       title            CHAR(50)    NOT NULL,
-       description      CHAR(200)   NOT NULL,
+       title            VARCHAR(50)    NOT NULL,
+       description      VARCHAR(200)   NOT NULL,
        due              DATE        NOT NULL,
        points           INT         NOT NULL,
        course           INT
@@ -106,7 +106,7 @@ def createdatabase(database_url):
         submitted       TIMESTAMP,
         grade           INT,
         assignment      INT
-        CONSTRAINT valid_grade CHECK(0 <= grade AND grade <= 100)
+        CONSTRAINT valid_grade CHECK(0 <= grade)
     );''')
 
 

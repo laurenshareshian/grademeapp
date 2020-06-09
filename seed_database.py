@@ -101,7 +101,6 @@ def seed_student_submission(cursor):
       (1, 3),
       (2, 1),
       (2, 4),
-      (1, 5),
       (3, 3),
     ]
   )

@@ -518,27 +518,27 @@ def assignment(assignment_id, course_id):
     """display assignment details and submissions"""
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+
     dict_cur.execute(f'''
-        SELECT student.student_id, student_course.course_id,
+    SELECT student.student_id, course.course_id,
         assignment.title, submission.submission_id, first_name,
         last_name, grade, submitted, assignment AS assignment_id,
         course.title AS course_title,
         assignment.description, assignment.points, assignment.due
-        FROM submission
-        INNER JOIN student_submission
-        ON student_submission.submission_id = submission.submission_id
-        INNER JOIN student
-        ON student.student_id = student_submission.student_id
-        INNER JOIN student_course
-        ON student.student_id = student_course.student_id
-        INNER JOIN course
-        ON student_course.course_id = course.course_id
-        INNER JOIN assignment
-        ON submission.assignment = assignment.assignment_id
-        WHERE assignment.assignment_id = {assignment_id}
-        AND student_course.course_id = {course_id};
-        ''')
+    FROM assignment 
+    LEFT JOIN submission
+    ON assignment.assignment_id = submission.assignment
+    LEFT JOIN student_submission
+    ON submission.submission_id = student_submission.submission_id
+    LEFT JOIN student
+    ON student_submission.student_id = student.student_id
+    LEFT JOIN course
+    ON assignment.course = course.course_id
+    WHERE assignment.assignment_id = {assignment_id};
+    ''')
     submissions = dict_cur.fetchall()
+    print(len(submissions))
+    print(submissions)
     if not len(submissions):
         dict_cur.execute(f'''
             SELECT *, course as course_id FROM assignment
@@ -1050,18 +1050,6 @@ WHERE submission_id = {submission_id};'''
     cursor.close()
     db_pool.putconn(db_conn)
 
-    # if redirect_option == "student":
-    #     return redirect(
-    #         url_for(
-    #             'student',
-    #             student_id=item_id,
-    #             course_id=course_id))
-    # else:
-    #     return redirect(
-    #         url_for(
-    #             'assignment',
-    #             assignment_id=item_id,
-    #             course_id=course_id))
     return redirect(
         url_for(
             'view_course',

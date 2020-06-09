@@ -19,7 +19,8 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/">GradeMe</a>
+                <a class="navbar-brand" href="/"><img height="50" src="{{ url_for('static', filename = 'images/check.png') }}"/></a>
+
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
@@ -36,8 +37,22 @@
 
 {% block content %}
 
-    <div class="container">
+    <div class="container content">
+        <p class="lead">Note: The Admin area contains God-like powers such as manually altering keys and typing in foreign keys. The teacher view restricts these powers and allows the user to select items using dropdowns instead of referring to foreign keys and autoincrements primary keys upon insertion. </p>
         {# application content needs to be provided in the app_content block #}
         {% block app_content %}{% endblock %}
     </div>
+        <nav class="navbar navbar-default" >
+        <div class="container" id="footertext">
+            <div id="div1footer">
+                Made @ <a href="https://engineering.oregonstate.edu/"><img height="40" src="{{ url_for('static', filename = 'images/osu2.jpeg') }}"/> </a>
+            </div>
+            <div id="div2footer">
+                GradeMe &copy 2020
+            </div>
+            <div id="div3footer">
+                Code @ <a href="https://github.com/laurenshareshian/grademeapp"><img height="40" src="{{ url_for('static', filename = 'images/github.png') }}"/> </a>
+            </div>
+        </div>
+    </nav>
 {% endblock %}
