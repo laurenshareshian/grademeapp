@@ -254,25 +254,30 @@ def student(student_id, course_id):
     "display student submissions and courses"
     db_conn = db_pool.getconn()
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+
+    ### get all submissions for the student in THIS course
     dict_cur.execute(f'''
-        SELECT student.student_id, student_course.course_id,
-        assignment.title, submission.submission_id, first_name,
-        last_name, grade, submitted, assignment
-        FROM submission
-        LEFT JOIN student_submission
-        ON student_submission.submission_id = submission.submission_id
-        LEFT JOIN student
-        ON student.student_id = student_submission.student_id
-        LEFT JOIN student_course
-        ON student.student_id = student_course.student_id
-        LEFT JOIN assignment
-        ON submission.assignment = assignment.assignment_id
-        WHERE student.student_id = {student_id}
-        AND assignment.course = {course_id};
-        ''')
+    SELECT student_course.student_id, student_course.course_id, 
+    assignment.title, submission.submission_id, student.first_name,
+    student.last_name, submission.grade, submission.submitted
+    FROM student_course 
+    LEFT JOIN student 
+    ON student_course.student_id = student.student_id 
+    LEFT JOIN student_submission
+    ON student.student_id = student_submission.submission_id 
+    LEFT JOIN assignment 
+    ON student_course.course_id = assignment.course 
+    LEFT JOIN submission
+    ON assignment.assignment_id = submission.assignment 
+    WHERE student_course.course_id = {course_id} 
+    AND student_course.student_id = {student_id};
+    ''')
+
     submissions = dict_cur.fetchall()
-    print('course id', course_id, student_id)
+    print(len(submissions))
     print('subs',submissions)
+
+    ### if student did not have any submissions we still need their student info
     if not len(submissions):
         dict_cur.execute(f'''
             SELECT student.student_id, student_course.course_id,
@@ -285,6 +290,8 @@ def student(student_id, course_id):
             ''')
         submissions = dict_cur.fetchall()
 
+
+    ### get the student's course schedule
     dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
     dict_cur.execute(
         f"SELECT student.student_id, teacher.teacher_id, "
@@ -297,20 +304,29 @@ def student(student_id, course_id):
         f"INNER JOIN course on course.course_id = student_course.course_id "
         f"INNER JOIN teacher on course.teacher = teacher.teacher_id "
         f"WHERE student.student_id = {student_id}")
-    courses = dict_cur.fetchall()
-    if not len(courses):
+    allcourses = dict_cur.fetchall()
+    # even if the student doesn't have any courses we'll get their info
+    if not len(allcourses):
         dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
         dict_cur.execute(
             f"SELECT * FROM student WHERE student_id={student_id};")
-        courses = dict_cur.fetchall()
+        allcourses = dict_cur.fetchall()
+
+        dict_cur = db_conn.cursor(cursor_factory=extras.DictCursor)
+
+    dict_cur.execute(
+        f"SELECT * FROM course "
+        f"WHERE course_id={course_id};")
+    thiscourse = dict_cur.fetchone()
 
     dict_cur.close()
     db_pool.putconn(db_conn)
-
     return render_template(
         'student.html',
         submissions=submissions,
-        courses=courses)
+        courses=allcourses,
+        thiscourse=thiscourse
+        )
 
 
 @app.route('/editstudent/<student_id>/<course_id>', methods=['GET', 'POST'])
